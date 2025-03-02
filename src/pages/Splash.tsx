@@ -3,18 +3,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Code, HandHeart, Users } from 'lucide-react';
+import ThreeBackground from '@/components/ThreeBackground';
 
 const Splash: React.FC = () => {
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-white relative overflow-hidden">
+      {/* Three.js Background */}
+      <ThreeBackground />
+      
       {/* Hero section */}
-      <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden bg-campaign-navy py-20 text-white">
+      <section className="relative flex min-h-[80vh] items-center justify-center overflow-hidden py-20 text-white">
         <div className="absolute inset-0 z-0 bg-gradient-to-br from-campaign-navy via-campaign-navy-light to-campaign-navy-dark opacity-90"></div>
-        <div className="absolute inset-0 z-0 opacity-10" style={{
-          backgroundImage: 'url("https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1650&q=80")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}></div>
         
         <div className="container relative z-10">
           <div className="mx-auto max-w-3xl text-center">
