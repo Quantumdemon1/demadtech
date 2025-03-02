@@ -21,7 +21,7 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-6">
           <Link to="/" className="flex items-center space-x-2">
             <span className="text-2xl font-bold text-campaign-navy dark:text-white">
-              VOTE<span className="text-campaign-orange">APP</span>
+              Ad<span className="text-campaign-orange">Tech</span>
             </span>
           </Link>
           
