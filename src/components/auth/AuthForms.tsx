@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, UserIcon, ShieldIcon } from 'lucide-react';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -24,6 +24,20 @@ export const LoginForm: React.FC = () => {
       navigate('/dashboard');
     } catch (error) {
       // Error handling is done in the context
+      setIsLoading(false);
+    }
+  };
+
+  const loginWithDemoAccount = async (type: 'user' | 'admin') => {
+    setIsLoading(true);
+    try {
+      if (type === 'user') {
+        await login('demo@adtech.com', 'demo123');
+      } else {
+        await login('admin@adtech.com', 'admin123');
+      }
+      navigate('/dashboard');
+    } catch (error) {
       setIsLoading(false);
     }
   };
@@ -90,6 +104,32 @@ export const LoginForm: React.FC = () => {
           {isLoading ? 'Logging in...' : 'Login'}
         </Button>
       </form>
+      
+      <div className="mt-6 border-t pt-6">
+        <p className="text-center text-sm font-medium text-muted-foreground mb-3">
+          Or try our demo accounts
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <Button 
+            variant="outline" 
+            className="flex items-center justify-center" 
+            onClick={() => loginWithDemoAccount('user')}
+            disabled={isLoading}
+          >
+            <UserIcon className="mr-2 h-4 w-4" />
+            <span>Demo User</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            className="flex items-center justify-center" 
+            onClick={() => loginWithDemoAccount('admin')}
+            disabled={isLoading}
+          >
+            <ShieldIcon className="mr-2 h-4 w-4" />
+            <span>Demo Admin</span>
+          </Button>
+        </div>
+      </div>
       
       <div className="mt-6 text-center text-sm">
         <p>
