@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import CampaignDetail from "./pages/CampaignDetail";
 import CreateCampaign from "./pages/CreateCampaign";
 import NotFound from "./pages/NotFound";
+import Splash from "./pages/Splash";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/splash" element={<Splash />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/account" element={<Account />} />
