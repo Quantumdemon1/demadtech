@@ -93,7 +93,7 @@ const CampaignDashboard: React.FC = () => {
           republicanLastName: 'Miller',
         },
         contentType: 'funny',
-        contentText: 'Healthcare shouldn't be a luxury. Vote for Sarah Brown because she believes everyone deserves access to quality care without going bankrupt.',
+        contentText: "Healthcare shouldn't be a luxury. Vote for Sarah Brown because she believes everyone deserves access to quality care without going bankrupt.",
         startDate: '2024-10-01',
         endDate: '2024-11-04',
         adSpend: 600,
