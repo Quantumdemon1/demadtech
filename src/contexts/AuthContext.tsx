@@ -6,11 +6,34 @@ import { toast } from 'sonner';
 // Simulate authentication with localStorage
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Demo account data
+const demoAccounts = [
+  {
+    id: 'demo-user-123',
+    email: 'demo@adtech.com',
+    password: 'demo123',
+    name: 'Demo User',
+    role: 'user',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'demo-admin-456',
+    email: 'admin@adtech.com',
+    password: 'admin123',
+    name: 'Demo Admin',
+    role: 'admin',
+    createdAt: new Date().toISOString()
+  }
+];
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Initialize demo accounts if they don't exist
+    initializeDemoAccounts();
+    
     // Check if user is already logged in
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -18,6 +41,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setLoading(false);
   }, []);
+
+  // Initialize demo accounts in localStorage
+  const initializeDemoAccounts = () => {
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+    
+    // Only add demo accounts if they don't already exist
+    let updated = false;
+    
+    demoAccounts.forEach(demoAccount => {
+      if (!registeredUsers.some((u: Partial<User>) => u.email === demoAccount.email)) {
+        registeredUsers.push(demoAccount);
+        updated = true;
+        console.log(`Demo account created: ${demoAccount.email}`);
+      }
+    });
+    
+    if (updated) {
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+    }
+  };
 
   const login = async (email: string, password: string) => {
     setLoading(true);
