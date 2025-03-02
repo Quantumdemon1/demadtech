@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Eye, MousePointer, Share2 } from 'lucide-react';
+import { Eye, MousePointer, Share2, BarChart } from 'lucide-react';
 
 export interface MetricCardProps extends React.HTMLAttributes<HTMLDivElement> {
   value: string | number;
   label: string;
-  type: 'impressions' | 'clicks' | 'shares' | string;
+  type: 'impressions' | 'clicks' | 'shares' | 'ctr' | string;
   highlighted?: boolean;
 }
 
@@ -27,6 +27,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
         return <MousePointer className="h-8 w-8 text-campaign-orange" />;
       case 'shares':
         return <Share2 className="h-8 w-8 text-blue-500" />;
+      case 'ctr':
+        return <BarChart className="h-8 w-8 text-green-500" />;
       default:
         return <MousePointer className="h-8 w-8 text-campaign-orange" />;
     }

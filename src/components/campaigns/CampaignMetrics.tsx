@@ -17,6 +17,11 @@ const CampaignMetrics: React.FC<CampaignMetricsProps> = ({
   title = 'Campaign Metrics',
   showViewAllLink = false,
 }) => {
+  // Calculate CTR (Click-Through Rate) as percentage
+  const ctr = metrics.impressions > 0 
+    ? ((metrics.clicks / metrics.impressions) * 100).toFixed(2) 
+    : '0.00';
+
   return (
     <div className={cn('space-y-4', className)}>
       <div className="flex items-center justify-between">
@@ -44,9 +49,9 @@ const CampaignMetrics: React.FC<CampaignMetricsProps> = ({
           label="Shares"
         />
         <MetricCard
-          type="clicks"
-          value={`${Math.floor(metrics.clicks / 1000)}K+`}
-          label="Clicks"
+          type="ctr"
+          value={`${ctr}%`}
+          label="CTR"
         />
       </div>
     </div>
