@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import CampaignDetail from "./pages/CampaignDetail";
 import CreateCampaign from "./pages/CreateCampaign";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminCampaignApproval from "./pages/AdminCampaignApproval";
 import NotFound from "./pages/NotFound";
 import Splash from "./pages/Splash";
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/campaigns/:id" element={<CampaignDetail />} />
             <Route path="/create-campaign" element={<CreateCampaign />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/campaign-approval" element={<AdminCampaignApproval />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
