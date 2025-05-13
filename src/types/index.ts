@@ -1,26 +1,18 @@
 export interface User {
   id: string;
+  email?: string;
   firstName?: string;
   lastName?: string;
-  email?: string;
+  loginUsername?: string; 
+  politicalClientName?: string;
+  role: 'donor' | 'politicalClient' | 'admin';
   phone?: string;
+  occupation?: string;
   address?: string;
   city?: string;
   state?: string;
   zip?: string;
-  occupation?: string;
-  role: 'donor' | 'politicalClient' | 'admin';
-  // Political Client specific fields
-  politicalClientName?: string;
-  ein?: string;
-  fecNum?: string;
-  fundingMethod?: string;
-  pacId?: string;
-  platform?: string;
-  profileImageUrl?: string;
-  targets?: any;
-  // Keep track of which login method was used
-  loginUsername?: string;
+  createdAt: string;
 }
 
 export interface Contest {
@@ -98,7 +90,7 @@ export interface Initiative {
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string, role?: 'donor' | 'politicalClient' | 'admin') => Promise<void>;
+  login: (emailOrUsername: string, password: string, role?: 'donor' | 'politicalClient' | 'admin') => Promise<void>;
   signup: (userData: Partial<User>, password: string) => Promise<void>;
   politicalClientSignup: (userData: Partial<User>, password: string) => Promise<void>;
   logout: () => void;
