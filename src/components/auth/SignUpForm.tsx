@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,6 +21,7 @@ export const SignUpForm: React.FC = () => {
     city: '',
     state: '',
     zip: '',
+    role: 'donor' as UserRole // Add the role property with a default value
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +50,7 @@ export const SignUpForm: React.FC = () => {
       
       const { confirmPassword, ...userData } = formData;
       if (selectedRole) {
-        userData.role = selectedRole;
+        userData.role = selectedRole; // Now this assignment is valid since role exists in userData
       }
       await signup(userData, formData.password);
       navigate('/dashboard');
