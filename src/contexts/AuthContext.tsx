@@ -28,7 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Login handler
-  const login = async (emailOrUsername: string, password: string, role?: 'donor' | 'politicalClient' | 'admin') => {
+  const login = async (emailOrUsername: string, password: string, role?: 'donor' | 'politicalClient' | 'admin'): Promise<User> => {
     setLoading(true);
     try {
       // Set loginPw cookie for authentication
@@ -63,7 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Signup handler for donors
-  const signup = async (userData: Partial<User>, password: string) => {
+  const signup = async (userData: Partial<User>, password: string): Promise<User> => {
     setLoading(true);
     try {
       // Create request body for donor creation
@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Political client signup handler
-  const politicalClientSignup = async (userData: Partial<User>, password: string) => {
+  const politicalClientSignup = async (userData: Partial<User>, password: string): Promise<User> => {
     setLoading(true);
     try {
       // Create request body for political client creation

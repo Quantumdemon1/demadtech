@@ -96,9 +96,9 @@ export interface Initiative {
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (emailOrUsername: string, password: string, role?: 'donor' | 'politicalClient' | 'admin') => Promise<void>;
-  signup: (userData: Partial<User>, password: string) => Promise<void>;
-  politicalClientSignup: (userData: Partial<User>, password: string) => Promise<void>;
+  login: (emailOrUsername: string, password: string, role?: 'donor' | 'politicalClient' | 'admin') => Promise<User>;
+  signup: (userData: Partial<User>, password: string) => Promise<User>;
+  politicalClientSignup: (userData: Partial<User>, password: string) => Promise<User>;
   logout: () => void;
   updateUserProfile: (updatedUser: User) => void;
 }

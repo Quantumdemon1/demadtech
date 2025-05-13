@@ -58,10 +58,10 @@ export function mapPoliticalClientToUser(clientData: any): User {
 /**
  * Maps frontend User to backend donor creation/update request body
  */
-export function mapUserToDonorRequest(user: Partial<User>): {
+export function mapUserToDonorRequest(user: Partial<User> & { password?: string }): {
   donorName: string;
   loginUsername: string;
-  loginPw?: string;
+  loginPw: string;
 } {
   return {
     // Combine firstName and lastName for donorName
@@ -70,23 +70,23 @@ export function mapUserToDonorRequest(user: Partial<User>): {
       : user.firstName || user.lastName || '',
     // Use loginUsername directly or fall back to email
     loginUsername: user.loginUsername || user.email || '',
-    // Only include loginPw if it was provided (for creation)
-    ...(user.hasOwnProperty('password') && { loginPw: (user as any).password }),
+    // Include loginPw if it was provided (for creation)
+    loginPw: user.password || '',
   };
 }
 
 /**
  * Maps frontend User to backend political client creation/update request body
  */
-export function mapUserToPoliticalClientRequest(user: Partial<User>): {
+export function mapUserToPoliticalClientRequest(user: Partial<User> & { password?: string }): {
   politicalClientName: string;
   loginUsername: string;
-  loginPw?: string;
+  loginPw: string;
 } {
   return {
     politicalClientName: user.politicalClientName || '',
     loginUsername: user.loginUsername || user.email || '',
-    // Only include loginPw if it was provided (for creation)
-    ...(user.hasOwnProperty('password') && { loginPw: (user as any).password }),
+    // Include loginPw if it was provided (for creation)
+    loginPw: user.password || '',
   };
 }
