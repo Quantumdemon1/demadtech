@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AccountForm } from '@/components/auth/AuthForms';
+import AccountForm from '@/components/auth/AccountForm';
 import Header from '@/components/layout/Header';
 import useAuth from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';

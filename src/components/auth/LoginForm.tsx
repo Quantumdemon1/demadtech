@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { EyeIcon, EyeOffIcon, UserIcon, ShieldIcon, BuildingIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import RoleSelection, { UserRole } from './RoleSelection';
 
 export const LoginForm: React.FC = () => {
@@ -26,22 +26,6 @@ export const LoginForm: React.FC = () => {
       navigate('/dashboard');
     } catch (error) {
       // Error handling is done in the context
-      setIsLoading(false);
-    }
-  };
-
-  const loginWithDemoAccount = async (type: 'user' | 'admin' | 'political') => {
-    setIsLoading(true);
-    try {
-      if (type === 'user') {
-        await login('demo@adtech.com', 'demo123', 'donor');
-      } else if (type === 'admin') {
-        await login('admin@adtech.com', 'admin123', 'admin');
-      } else if (type === 'political') {
-        await login('political', 'client123', 'politicalClient');
-      }
-      navigate('/dashboard');
-    } catch (error) {
       setIsLoading(false);
     }
   };
@@ -82,7 +66,7 @@ export const LoginForm: React.FC = () => {
           <RoleSelection 
             selectedRole={selectedRole}
             onRoleSelect={handleRoleSelect}
-            showAdmin={true}
+            showAdmin={false} // Removing admin option as it will use real backend
           />
           
           <div className="mt-4 text-center">
@@ -158,41 +142,6 @@ export const LoginForm: React.FC = () => {
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
-          
-          <div className="mt-6 border-t pt-6">
-            <p className="text-center text-sm font-medium text-muted-foreground mb-3">
-              Or try our demo accounts
-            </p>
-            <div className="grid grid-cols-3 gap-3">
-              <Button 
-                variant="outline" 
-                className="flex items-center justify-center" 
-                onClick={() => loginWithDemoAccount('user')}
-                disabled={isLoading}
-              >
-                <UserIcon className="mr-2 h-4 w-4" />
-                <span>Donor</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex items-center justify-center" 
-                onClick={() => loginWithDemoAccount('political')}
-                disabled={isLoading}
-              >
-                <BuildingIcon className="mr-2 h-4 w-4" />
-                <span>Political</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="flex items-center justify-center" 
-                onClick={() => loginWithDemoAccount('admin')}
-                disabled={isLoading}
-              >
-                <ShieldIcon className="mr-2 h-4 w-4" />
-                <span>Admin</span>
-              </Button>
-            </div>
-          </div>
           
           <div className="mt-6 text-center text-sm">
             <p>

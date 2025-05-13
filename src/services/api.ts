@@ -90,7 +90,8 @@ export const createDonorAPI = (donorData: {
  */
 export const updateDonorAPI = (loginUsername: string, donorData: {
     donorName?: string,
-    // Additional fields would be added here as the backend supports them
+    profileImageFilename?: string,
+    profileImagePayload?: string
 }) => {
     return request(`/donor?loginUsername=${encodeURIComponent(loginUsername)}`, {
         method: 'PUT',
@@ -126,5 +127,3 @@ export const createPoliticalClientAPI = (clientData: {
         body: JSON.stringify(clientData),
     });
 };
-
-// Additional API endpoints will be added in subsequent phases

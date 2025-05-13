@@ -90,29 +90,3 @@ export function mapUserToPoliticalClientRequest(user: Partial<User>): {
     ...(user.hasOwnProperty('password') && { loginPw: (user as any).password }),
   };
 }
-
-/**
- * DATA MAPPING NOTES
- * 
- * Key differences between frontend and backend data models:
- * 
- * 1. Identifiers:
- *    - Backend: Uses {entity}Guid (e.g., donorGuid, politicalClientGuid)
- *    - Frontend: Uses id for all entity types
- * 
- * 2. Authentication:
- *    - Backend: Uses loginUsername + loginPw cookie
- *    - Frontend: Uses email + password
- * 
- * 3. Name handling:
- *    - Backend: Single donorName or politicalClientName field
- *    - Frontend: firstName + lastName (for donors) or politicalClientName (for political clients)
- * 
- * 4. Extended profile data:
- *    - Frontend User interface includes phone, address, city, state, zip, occupation
- *    - Current backend schema doesn't explicitly support these in basic operations
- * 
- * 5. Role determination:
- *    - Frontend needs a 'role' field ('donor', 'politicalClient', 'admin')
- *    - Backend doesn't explicitly return a role field; it's determined by which endpoint is used
- */

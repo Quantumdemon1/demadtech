@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;  // Maps to backend's 'donorGuid' or 'politicalClientGuid'
   email?: string;  // Maps to backend's 'loginUsername' for authentication
@@ -99,4 +100,5 @@ export interface AuthContextType {
   signup: (userData: Partial<User>, password: string) => Promise<void>;
   politicalClientSignup: (userData: Partial<User>, password: string) => Promise<void>;
   logout: () => void;
+  updateUserProfile: (updatedUser: User) => void;
 }

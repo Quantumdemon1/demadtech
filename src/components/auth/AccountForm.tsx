@@ -1,12 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useAuth from '@/hooks/useAuth';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { updateDonorAPI } from '@/services/api';
+import { User } from '@/types';
+import { InfoIcon } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const AccountForm: React.FC = () => {
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
@@ -18,6 +22,22 @@ export const AccountForm: React.FC = () => {
     zip: user?.zip || '',
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  // Update form when user changes
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || '',
+        state: user.state || '',
+        zip: user.zip || '',
+      });
+    }
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -31,25 +51,48 @@ export const AccountForm: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // In a real app, we would update the user in the API
-      // For now, we'll just simulate a delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update user in localStorage
-      if (user) {
-        const updatedUser = { ...user, ...formData };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        
-        // Update in registered users
-        const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-        const updatedUsers = registeredUsers.map((u: any) => 
-          u.id === user.id ? { ...u, ...formData } : u
-        );
-        localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
+      if (!user) {
+        throw new Error('User not found');
       }
+
+      // Only update fields that are supported by the backend
+      const updateData: { donorName?: string } = {};
+
+      // Only update donorName if either firstName or lastName changed
+      if (formData.firstName !== user.firstName || formData.lastName !== user.lastName) {
+        updateData.donorName = `${formData.firstName} ${formData.lastName}`;
+      }
+
+      // Only make API call if there are changes to send
+      if (Object.keys(updateData).length > 0) {
+        await updateDonorAPI(user.email || user.loginUsername || '', updateData);
+
+        // Update the user in context and localStorage with the new data
+        const updatedUser: User = {
+          ...user,
+          firstName: formData.firstName,
+          lastName: formData.lastName
+        };
+        updateUserProfile(updatedUser);
+      }
+      
+      // Always store the local-only fields in context
+      // These fields aren't sent to the backend but are kept in the frontend
+      const updatedUser: User = {
+        ...user,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip
+      };
+      updateUserProfile(updatedUser);
       
       toast.success('Account updated successfully');
     } catch (error) {
+      console.error('Update error:', error);
       toast.error('Failed to update account');
     } finally {
       setIsLoading(false);
@@ -59,6 +102,49 @@ export const AccountForm: React.FC = () => {
   if (!user) {
     return <div>Please log in to view your account</div>;
   }
+
+  // Helper to determine if a field is supported by the backend
+  const isFieldBackendSupported = (fieldName: string): boolean => {
+    // Currently only name fields are supported
+    return ['firstName', 'lastName'].includes(fieldName);
+  };
+
+  // Render input field with optional tooltip for unsupported fields
+  const renderInput = (fieldName: string, label: string, placeholder: string, type = 'text', disabled = false) => {
+    const isSupported = isFieldBackendSupported(fieldName);
+    
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <label htmlFor={fieldName} className="text-sm font-medium">
+            {label}
+          </label>
+          {!isSupported && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <InfoIcon size={16} className="text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>This field is stored locally only and not synchronized with the server.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+        <Input
+          id={fieldName}
+          name={fieldName}
+          placeholder={placeholder}
+          value={formData[fieldName as keyof typeof formData] || ''}
+          onChange={handleChange}
+          type={type}
+          className="input-field"
+          disabled={disabled}
+        />
+      </div>
+    );
+  };
 
   return (
     <div className="animate-fade-in-up form-container max-w-xl">
@@ -71,127 +157,26 @@ export const AccountForm: React.FC = () => {
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="firstName" className="text-sm font-medium">
-              First Name *
-            </label>
-            <Input
-              id="firstName"
-              name="firstName"
-              placeholder="John"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-              className="input-field"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="lastName" className="text-sm font-medium">
-              Last Name *
-            </label>
-            <Input
-              id="lastName"
-              name="lastName"
-              placeholder="Doe"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              className="input-field"
-            />
-          </div>
+          {renderInput('firstName', 'First Name *', 'John')}
+          {renderInput('lastName', 'Last Name *', 'Doe')}
         </div>
         
-        <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium">
-            Email Account *
-          </label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            placeholder="your@email.com"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="input-field"
-            disabled
-          />
-          <p className="text-xs text-muted-foreground">
+        {renderInput('email', 'Email Account *', 'your@email.com', 'email', true)}
+        {user.email && (
+          <p className="text-xs text-muted-foreground -mt-2">
             Email cannot be changed
           </p>
-        </div>
+        )}
         
-        <div className="space-y-2">
-          <label htmlFor="phone" className="text-sm font-medium">
-            Phone Number
-          </label>
-          <Input
-            id="phone"
-            name="phone"
-            type="tel"
-            placeholder="(123) 456-7890"
-            value={formData.phone}
-            onChange={handleChange}
-            className="input-field"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <label htmlFor="address" className="text-sm font-medium">
-            Address
-          </label>
-          <Input
-            id="address"
-            name="address"
-            placeholder="123 Main St"
-            value={formData.address}
-            onChange={handleChange}
-            className="input-field"
-          />
-        </div>
+        {renderInput('phone', 'Phone Number', '(123) 456-7890', 'tel')}
+        {renderInput('address', 'Address', '123 Main St')}
         
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <label htmlFor="city" className="text-sm font-medium">
-              City
-            </label>
-            <Input
-              id="city"
-              name="city"
-              placeholder="New York"
-              value={formData.city}
-              onChange={handleChange}
-              className="input-field"
-            />
-          </div>
+          {renderInput('city', 'City', 'New York')}
+          {renderInput('state', 'State', 'NY')}
           
-          <div className="space-y-2">
-            <label htmlFor="state" className="text-sm font-medium">
-              State
-            </label>
-            <Input
-              id="state"
-              name="state"
-              placeholder="NY"
-              value={formData.state}
-              onChange={handleChange}
-              className="input-field"
-            />
-          </div>
-          
-          <div className="space-y-2 col-span-2 md:col-span-1">
-            <label htmlFor="zip" className="text-sm font-medium">
-              Zip
-            </label>
-            <Input
-              id="zip"
-              name="zip"
-              placeholder="10001"
-              value={formData.zip}
-              onChange={handleChange}
-              className="input-field"
-            />
+          <div className="col-span-2 md:col-span-1">
+            {renderInput('zip', 'Zip', '10001')}
           </div>
         </div>
         
