@@ -25,7 +25,19 @@ const Header: React.FC = () => {
             </span>
           </Link>
           
-          {user && (
+          {user && user.role === 'admin' ? (
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link to="/admin/dashboard" className={getLinkClass('/admin/dashboard')}>
+                Dashboard
+              </Link>
+              <Link to="/admin/campaign-approval" className={getLinkClass('/admin/campaign-approval')}>
+                Campaign Approvals
+              </Link>
+              <Link to="/admin/manage-awards" className={getLinkClass('/admin/manage-awards')}>
+                Manage Awards
+              </Link>
+            </nav>
+          ) : user && (
             <nav className="hidden md:flex items-center space-x-6">
               <Link to="/dashboard" className={getLinkClass('/dashboard')}>
                 My Campaigns
@@ -40,8 +52,8 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <Link to="/account" className={getLinkClass('/account')}>
-                My Account
+              <Link to={user.role === 'admin' ? "/admin/dashboard" : "/account"} className={getLinkClass(user.role === 'admin' ? '/admin/dashboard' : '/account')}>
+                {user.role === 'admin' ? 'Admin Panel' : 'My Account'}
               </Link>
               <Button 
                 variant="ghost" 
