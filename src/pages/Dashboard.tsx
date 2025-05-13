@@ -1,8 +1,7 @@
-
 import React from 'react';
 import Header from '@/components/layout/Header';
 import CampaignDashboard from '@/components/campaigns/CampaignDashboard';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
