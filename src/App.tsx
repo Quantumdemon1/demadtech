@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import PoliticalClientSignUp from "./pages/PoliticalClientSignUp";
 import Account from "./pages/Account";
 import Dashboard from "./pages/Dashboard";
 import CampaignDetail from "./pages/CampaignDetail";
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/splash" element={<Splash />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/political-signup" element={<PoliticalClientSignUp />} />
             <Route path="/account" element={<Account />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/campaigns/:id" element={<CampaignDetail />} />
