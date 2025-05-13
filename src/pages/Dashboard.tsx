@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import CampaignDashboard from '@/components/campaigns/CampaignDashboard';
@@ -42,7 +41,7 @@ const mockInitiatives: Initiative[] = [
     },
     seedQuestions: [
       'How would you improve public school funding?',
-      'What's your position on teacher salary increases?'
+      'What\'s your position on teacher salary increases?'
     ],
     createdAt: '2024-04-01'
   },
@@ -57,7 +56,7 @@ const mockInitiatives: Initiative[] = [
       location: ['Midwest', 'Rural Areas']
     },
     seedQuestions: [
-      'What's your plan to make healthcare more affordable?',
+      'What\'s your plan to make healthcare more affordable?',
       'How would you address the needs of rural healthcare facilities?'
     ],
     createdAt: '2024-04-20'
