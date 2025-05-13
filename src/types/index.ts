@@ -1,18 +1,23 @@
 export interface User {
-  id: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  loginUsername?: string; 
-  politicalClientName?: string;
-  role: 'donor' | 'politicalClient' | 'admin';
-  phone?: string;
-  occupation?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  zip?: string;
+  id: string;  // Maps to backend's 'donorGuid' or 'politicalClientGuid'
+  email?: string;  // Maps to backend's 'loginUsername' for authentication
+  firstName?: string;  // Combined with lastName to form 'donorName' for backend
+  lastName?: string;   // Combined with firstName to form 'donorName' for backend
+  loginUsername?: string;  // Direct mapping to backend's 'loginUsername'
+  politicalClientName?: string;  // For political client users
+  role: 'donor' | 'politicalClient' | 'admin';  // Role is determined at login
+  phone?: string;  // Currently not in backend schema
+  occupation?: string;  // Currently not in backend schema
+  address?: string;  // Currently not in backend schema
+  city?: string;  // Currently not in backend schema
+  state?: string;  // Currently not in backend schema
+  zip?: string;  // Currently not in backend schema
   createdAt: string;
+  
+  // Backend-specific fields
+  accountBalance?: string;  // For donor accounts
+  profileImageUrl?: string;  // For user profile images
+  profileImagePresignedUrl?: string;  // Temporary URL for image upload/download
 }
 
 export interface Contest {
