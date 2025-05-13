@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import CampaignMetrics from '@/components/campaigns/CampaignMetrics';
-import { useAuth } from '@/contexts/AuthContext';
+import useAuth from '@/hooks/useAuth';
 import { Campaign } from '@/types';
 import CampaignHeader from '@/components/campaigns/CampaignHeader';
 import CampaignDetailsPanel from '@/components/campaigns/CampaignDetailsPanel';

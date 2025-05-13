@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Campaign, CampaignMetrics as CampaignMetricsType } from '@/types';
 import CampaignCard from './CampaignCard';
 import CampaignMetrics from './CampaignMetrics';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
+import useAuth from '@/hooks/useAuth';
 
 const CampaignDashboard: React.FC = () => {
   const { user } = useAuth();
