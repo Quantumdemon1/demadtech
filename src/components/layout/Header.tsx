@@ -37,6 +37,21 @@ const Header: React.FC = () => {
                 Manage Awards
               </Link>
             </nav>
+          ) : user && user.role === 'politicalClient' ? (
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link to="/political-client/dashboard" className={getLinkClass('/political-client/dashboard')}>
+                Dashboard
+              </Link>
+              <Link to="/political-client/initiative/create" className={getLinkClass('/political-client/initiative/create')}>
+                Create Initiative
+              </Link>
+              <Link to="/political-client/payments" className={getLinkClass('/political-client/payments')}>
+                Payments
+              </Link>
+              <Link to="/political-client/awards" className={getLinkClass('/political-client/awards')}>
+                Awards
+              </Link>
+            </nav>
           ) : user && (
             <nav className="hidden md:flex items-center space-x-6">
               <Link to="/dashboard" className={getLinkClass('/dashboard')}>
@@ -52,8 +67,28 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <Link to={user.role === 'admin' ? "/admin/dashboard" : "/account"} className={getLinkClass(user.role === 'admin' ? '/admin/dashboard' : '/account')}>
-                {user.role === 'admin' ? 'Admin Panel' : 'My Account'}
+              <Link 
+                to={
+                  user.role === 'admin' 
+                    ? "/admin/dashboard" 
+                    : user.role === 'politicalClient'
+                      ? "/political-client/profile"
+                      : "/account"
+                } 
+                className={getLinkClass(
+                  user.role === 'admin' 
+                    ? '/admin/dashboard' 
+                    : user.role === 'politicalClient'
+                      ? '/political-client/profile'
+                      : '/account'
+                )}
+              >
+                {user.role === 'admin' 
+                  ? 'Admin Panel' 
+                  : user.role === 'politicalClient'
+                    ? 'My Profile'
+                    : 'My Account'
+                }
               </Link>
               <Button 
                 variant="ghost" 

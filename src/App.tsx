@@ -16,6 +16,12 @@ import CreateCampaign from "./pages/CreateCampaign";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminCampaignApproval from "./pages/AdminCampaignApproval";
 import AdminManageAwards from "./pages/AdminManageAwards";
+import PoliticalClientDashboard from "./pages/political-client/PoliticalClientDashboard";
+import PoliticalClientProfile from "./pages/political-client/PoliticalClientProfile";
+import CreateEditInitiative from "./pages/political-client/CreateEditInitiative";
+import ManageInitiativeAssets from "./pages/political-client/ManageInitiativeAssets";
+import ClientPaymentsPage from "./pages/political-client/ClientPaymentsPage";
+import ClientGrantAwardPage from "./pages/political-client/ClientGrantAwardPage";
 import NotFound from "./pages/NotFound";
 import Splash from "./pages/Splash";
 
@@ -41,6 +47,14 @@ const App = () => (
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/campaign-approval" element={<AdminCampaignApproval />} />
             <Route path="/admin/manage-awards" element={<AdminManageAwards />} />
+            {/* Political Client Routes */}
+            <Route path="/political-client/dashboard" element={<PoliticalClientDashboard />} />
+            <Route path="/political-client/profile" element={<PoliticalClientProfile />} />
+            <Route path="/political-client/initiative/create" element={<CreateEditInitiative />} />
+            <Route path="/political-client/initiative/edit/:id" element={<CreateEditInitiative />} />
+            <Route path="/political-client/initiative/assets/:id" element={<ManageInitiativeAssets />} />
+            <Route path="/political-client/payments" element={<ClientPaymentsPage />} />
+            <Route path="/political-client/awards" element={<ClientGrantAwardPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

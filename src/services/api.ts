@@ -127,6 +127,164 @@ export const createPoliticalClientAPI = (clientData: {
     });
 };
 
+/**
+ * Update an existing political client account
+ * @param loginUsername - The username of the political client to update
+ * @param clientData - Object containing fields to update
+ * @returns Promise with the updated political client data
+ */
+export const updatePoliticalClientAPI = (loginUsername: string, clientData: {
+    politicalClientName?: string,
+    ein?: string,
+    email?: string,
+    fecNum?: string,
+    fundingMethod?: string,
+    loginUsername?: string,
+    loginPw?: string,
+    pacId?: string,
+    platform?: string,
+    profileImageFilename?: string,
+    profileImagePayload?: string,
+    targets?: string
+}) => {
+    return request(`/political-client?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'PUT',
+        body: JSON.stringify(clientData),
+    });
+};
+
+/**
+ * Get initiatives created by a political client
+ * @param loginUsername - The username of the authenticated political client
+ * @returns Promise with the political client's initiatives
+ */
+export const getPoliticalClientInitiativesAPI = (loginUsername: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to fetch initiatives."));
+    }
+    return request(`/political-client/initiatives?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'GET',
+    });
+};
+
+/**
+ * Create or update an initiative
+ * @param loginUsername - The username of the authenticated political client
+ * @param initiativeData - Object containing initiative details
+ * @returns Promise with the created/updated initiative data
+ */
+export const upsertInitiativeAPI = (loginUsername: string, initiativeData: {
+    initiativeName: string;
+    objective: string;
+    seedQuestions: string;
+    status: 'new' | 'active' | 'complete';
+    targets: string;
+    initiativeGuid?: string;
+    initiativeImageFilename?: string;
+    initiativeImagePayload?: string;
+}) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to create/update an initiative."));
+    }
+    return request(`/initiative?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'PUT',
+        body: JSON.stringify(initiativeData),
+    });
+};
+
+/**
+ * Get assets for an initiative
+ * @param loginUsername - The username of the authenticated user
+ * @param initiativeGuid - The ID of the initiative
+ * @returns Promise with initiative assets
+ */
+export const getInitiativeAssetsAPI = (loginUsername: string, initiativeGuid: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to fetch initiative assets."));
+    }
+    return request(`/initiative/assets?loginUsername=${encodeURIComponent(loginUsername)}&initiativeId=${encodeURIComponent(initiativeGuid)}`, {
+        method: 'GET',
+    });
+};
+
+/**
+ * Create or update an initiative asset
+ * @param loginUsername - The username of the authenticated political client
+ * @param assetData - Object containing asset details
+ * @returns Promise with the created/updated asset data
+ */
+export const upsertInitiativeAssetAPI = (loginUsername: string, assetData: {
+    assetGuid?: string;
+    assetFilename: string;
+    assetPayload: string;
+    description: string;
+    initiativeGuid: string;
+    name: string;
+}) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to create/update an asset."));
+    }
+    return request(`/initiative/asset?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'PUT',
+        body: JSON.stringify(assetData),
+    });
+};
+
+/**
+ * Add funds to a donor's account
+ * @param loginUsername - The username of the authenticated political client
+ * @param paymentData - Object containing payment details
+ * @returns Promise with the payment result
+ */
+export const politicalClientPayDonorAPI = (loginUsername: string, paymentData: {
+    amount: string;
+    donorGuid: string;
+    initiativeGuid: string;
+}) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to make a payment."));
+    }
+    return request(`/political-client/donor/pay?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'POST',
+        body: JSON.stringify(paymentData),
+    });
+};
+
+/**
+ * Grant an award to a donor
+ * @param loginUsername - The username of the authenticated political client
+ * @param grantData - Object containing award grant details
+ * @returns Promise with the grant result
+ */
+export const politicalClientGrantAwardAPI = (loginUsername: string, grantData: {
+    awardGuid: string;
+    donorGuid: string;
+    adCampaignGuid?: string;
+    initiativeGuid?: string;
+}) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to grant an award."));
+    }
+    return request(`/political-client/donor/award?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'POST',
+        body: JSON.stringify(grantData),
+    });
+};
+
+/**
+ * Get all available awards
+ * @param loginUsername - The username of the authenticated user
+ * @returns Promise with all awards data
+ */
+export const getAllAwardsAPI = (loginUsername: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to fetch awards."));
+    }
+    return request(`/awards?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'GET',
+    });
+};
+
 // === INITIATIVE API ENDPOINTS ===
 
 /**

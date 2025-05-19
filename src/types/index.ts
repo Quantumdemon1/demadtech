@@ -19,6 +19,23 @@ export interface User {
   accountBalance?: string;  // For donor accounts
   profileImageUrl?: string;  // For user profile images
   profileImagePresignedUrl?: string;  // Temporary URL for image upload/download
+  
+  // Political client specific fields
+  ein?: string;
+  fecNum?: string;
+  fundingMethod?: string;
+  pacId?: string;
+  platform?: string;
+  targets?: TargetingOptions;
+}
+
+export interface TargetingOptions {
+  age?: string[];
+  education?: string[];
+  gender?: string[];
+  language?: string[];
+  location?: string[];
+  relationship?: string[];
 }
 
 export interface Contest {
@@ -81,16 +98,24 @@ export interface Initiative {
   objective: string;
   seedQuestions?: string[];
   status: 'new' | 'active' | 'complete';
-  targets?: {
-    age?: string[];
-    education?: string[];
-    gender?: string[];
-    language?: string[];
-    location?: string[];
-    relationship?: string[];
-  };
+  targets?: TargetingOptions;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface InitiativeAsset {
+  assetGuid: string;
+  name: string;
+  description: string;
+  assetUrl: string;
+  assetPresignedUrl: string;
+}
+
+export interface Award {
+  awardGuid: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
 }
 
 export interface AuthContextType {
@@ -102,3 +127,4 @@ export interface AuthContextType {
   logout: () => void;
   updateUserProfile: (updatedUser: User) => void;
 }
+
