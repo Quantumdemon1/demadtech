@@ -8,6 +8,7 @@ import { Campaign, Initiative } from '@/types';
 import CampaignHeader from '@/components/campaigns/CampaignHeader';
 import CampaignDetailsPanel from '@/components/campaigns/CampaignDetailsPanel';
 import CampaignContentPanel from '@/components/campaigns/CampaignContentPanel';
+import AdCreativesPanel from '@/components/campaigns/AdCreativesPanel';
 import LoadingState from '@/components/campaigns/LoadingState';
 import NotFoundState from '@/components/campaigns/NotFoundState';
 import { toast } from 'sonner';
@@ -93,6 +94,10 @@ const CampaignDetail: React.FC = () => {
           showViewAllLink={true}
         />
         <CampaignContentPanel campaign={campaign} />
+        <AdCreativesPanel 
+          campaignId={campaign.id} 
+          initiativeId={campaign.contestId}
+        />
       </main>
     </div>
   );

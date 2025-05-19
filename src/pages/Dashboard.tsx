@@ -1,4 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import CampaignDashboard from '@/components/campaigns/CampaignDashboard';
 import useAuth from '@/hooks/useAuth';
@@ -9,83 +11,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Initiative } from '@/types';
-import { Users, ArrowRight, Compass } from 'lucide-react';
+import { Users, ArrowRight, Compass, LogIn, LogOut, Plus } from 'lucide-react';
+import { toast } from 'sonner';
+import { getAllInitiativesAPI, getDonorJoinedInitiativesAPI, linkDonorToInitiativeAPI, unlinkDonorFromInitiativeAPI } from '@/services/api';
+import { mapBackendInitiativeToInitiative } from '@/services/dataMapping';
 
-// Mock initiatives data
-const mockInitiatives: Initiative[] = [
-  {
-    id: '1',
-    initiativeName: 'Climate Action Fund',
-    initiativeImageUrl: '/placeholder.svg',
-    objective: 'Support candidates committed to environmental protection and climate change action',
-    status: 'active',
-    targets: {
-      location: ['California', 'New York', 'Washington'],
-      age: ['18-24', '25-34']
-    },
-    seedQuestions: [
-      'What environmental policies do you support?',
-      'How would you address climate change at the local level?'
-    ],
-    createdAt: '2024-03-15'
-  },
-  {
-    id: '2',
-    initiativeName: 'Education Reform Coalition',
-    initiativeImageUrl: '/placeholder.svg',
-    objective: 'Advocate for better education funding and teacher support',
-    status: 'active',
-    targets: {
-      location: ['Texas', 'Florida', 'Georgia'],
-      education: ['College Degree', 'Graduate Degree']
-    },
-    seedQuestions: [
-      'How would you improve public school funding?',
-      'What\'s your position on teacher salary increases?'
-    ],
-    createdAt: '2024-04-01'
-  },
-  {
-    id: '3',
-    initiativeName: 'Healthcare Access Project',
-    initiativeImageUrl: '/placeholder.svg',
-    objective: 'Support politicians advocating for affordable healthcare access',
-    status: 'new',
-    targets: {
-      age: ['35-44', '45-54', '55+'],
-      location: ['Midwest', 'Rural Areas']
-    },
-    seedQuestions: [
-      'What\'s your plan to make healthcare more affordable?',
-      'How would you address the needs of rural healthcare facilities?'
-    ],
-    createdAt: '2024-04-20'
-  },
-  {
-    id: '4',
-    initiativeName: 'Digital Privacy Alliance',
-    initiativeImageUrl: '/placeholder.svg',
-    objective: 'Support candidates committed to protecting digital rights and privacy',
-    status: 'active',
-    targets: {
-      age: ['18-24', '25-34'],
-      education: ['College Degree', 'Technical Training']
-    },
-    seedQuestions: [
-      'What regulations would you propose to protect user data?',
-      'How do you balance innovation with privacy concerns?'
-    ],
-    createdAt: '2024-02-10'
-  }
-];
-
-// User's joined initiatives (mock data)
-const mockJoinedInitiatives: Initiative[] = [
-  mockInitiatives[0], 
-  mockInitiatives[3]
-];
-
-const InitiativeCard: React.FC<{ initiative: Initiative; joined?: boolean }> = ({ initiative, joined = false }) => {
+const InitiativeCard: React.FC<{ 
+  initiative: Initiative; 
+  joined?: boolean;
+  onJoin?: () => void;
+  onLeave?: () => void;
+  onCreateCampaign?: () => void;
+  isProcessing?: boolean;
+}> = ({ 
+  initiative, 
+  joined = false, 
+  onJoin, 
+  onLeave,
+  onCreateCampaign,
+  isProcessing = false 
+}) => {
   return (
     <Card className="h-full flex flex-col transition-all hover:shadow-md">
       <CardHeader className="pb-2">
@@ -120,13 +65,38 @@ const InitiativeCard: React.FC<{ initiative: Initiative; joined?: boolean }> = (
           )}
         </div>
       </CardContent>
-      <CardFooter className="pt-1">
-        <Button variant="outline" className="w-full" asChild>
-          <a href="#">
-            {joined ? 'View Details' : 'Join Initiative'}
-            <ArrowRight className="ml-1 h-4 w-4" />
-          </a>
-        </Button>
+      <CardFooter className="pt-1 flex flex-col gap-2">
+        {!joined ? (
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            onClick={onJoin}
+            disabled={isProcessing}
+          >
+            {isProcessing ? 'Processing...' : 'Join Initiative'}
+            <LogIn className="ml-1 h-4 w-4" />
+          </Button>
+        ) : (
+          <>
+            <Button 
+              variant="outline" 
+              className="w-full bg-campaign-orange text-white hover:bg-campaign-orange-dark" 
+              onClick={onCreateCampaign}
+            >
+              Create Campaign
+              <Plus className="ml-1 h-4 w-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full text-gray-500" 
+              onClick={onLeave}
+              disabled={isProcessing}
+            >
+              {isProcessing ? 'Processing...' : 'Leave Initiative'}
+              <LogOut className="ml-1 h-4 w-4" />
+            </Button>
+          </>
+        )}
       </CardFooter>
     </Card>
   );
@@ -137,17 +107,32 @@ const InitiativeSection: React.FC<{
   initiatives: Initiative[]; 
   loading: boolean;
   joined?: boolean;
-}> = ({ title, initiatives, loading, joined = false }) => {
+  onJoinInitiative?: (initiative: Initiative) => void;
+  onLeaveInitiative?: (initiative: Initiative) => void;
+  onCreateCampaign?: (initiative: Initiative) => void;
+  processingInitiativeIds?: string[];
+}> = ({ 
+  title, 
+  initiatives, 
+  loading, 
+  joined = false,
+  onJoinInitiative,
+  onLeaveInitiative,
+  onCreateCampaign,
+  processingInitiativeIds = []
+}) => {
   return (
     <section className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
-        <Button variant="ghost" size="sm" asChild>
-          <a href="#">
-            View all
-            <ArrowRight className="ml-1 h-4 w-4" />
-          </a>
-        </Button>
+        {initiatives.length > 3 && (
+          <Button variant="ghost" size="sm" asChild>
+            <a href="#">
+              View all
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </a>
+          </Button>
+        )}
       </div>
 
       {loading ? (
@@ -168,13 +153,25 @@ const InitiativeSection: React.FC<{
             </Card>
           ))}
         </div>
+      ) : initiatives.length === 0 ? (
+        <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-6 text-center">
+          <p className="text-gray-500">
+            {joined 
+              ? 'You haven\'t joined any initiatives yet. Explore initiatives to get started.' 
+              : 'No initiatives found. Check back later for new opportunities.'}
+          </p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {initiatives.map((initiative) => (
             <InitiativeCard 
               key={initiative.id} 
               initiative={initiative}
-              joined={joined} 
+              joined={joined}
+              onJoin={() => onJoinInitiative?.(initiative)}
+              onLeave={() => onLeaveInitiative?.(initiative)}
+              onCreateCampaign={() => onCreateCampaign?.(initiative)}
+              isProcessing={processingInitiativeIds.includes(initiative.id)}
             />
           ))}
         </div>
@@ -185,24 +182,127 @@ const InitiativeSection: React.FC<{
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('campaigns');
-  const [loadingInitiatives, setLoadingInitiatives] = useState<boolean>(true);
-  const [initiatives, setInitiatives] = useState<Initiative[]>([]);
+  const [loadingAllInitiatives, setLoadingAllInitiatives] = useState<boolean>(true);
+  const [loadingJoinedInitiatives, setLoadingJoinedInitiatives] = useState<boolean>(true);
+  const [allInitiatives, setAllInitiatives] = useState<Initiative[]>([]);
   const [joinedInitiatives, setJoinedInitiatives] = useState<Initiative[]>([]);
+  const [processingInitiativeIds, setProcessingInitiativeIds] = useState<string[]>([]);
 
+  // Fetch all initiatives and joined initiatives
   useEffect(() => {
-    // Simulate loading initiatives data
-    const loadData = async () => {
-      setLoadingInitiatives(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setInitiatives(mockInitiatives);
-      setJoinedInitiatives(mockJoinedInitiatives);
-      setLoadingInitiatives(false);
+    if (!user || !user.email) {
+      setLoadingAllInitiatives(false);
+      setLoadingJoinedInitiatives(false);
+      return;
+    }
+
+    // Fetch all initiatives
+    const fetchAllInitiatives = async () => {
+      setLoadingAllInitiatives(true);
+      try {
+        const response = await getAllInitiativesAPI(user.email);
+        const mappedInitiatives = Array.isArray(response)
+          ? response.map(i => mapBackendInitiativeToInitiative(i))
+          : [];
+        setAllInitiatives(mappedInitiatives);
+      } catch (error) {
+        console.error("Error fetching initiatives:", error);
+        toast.error("Failed to load initiatives. Please try again.");
+        setAllInitiatives([]);
+      } finally {
+        setLoadingAllInitiatives(false);
+      }
     };
 
-    loadData();
-  }, []);
+    // Fetch joined initiatives
+    const fetchJoinedInitiatives = async () => {
+      setLoadingJoinedInitiatives(true);
+      try {
+        const response = await getDonorJoinedInitiativesAPI(user.email);
+        const mappedInitiatives = Array.isArray(response)
+          ? response.map(i => mapBackendInitiativeToInitiative(i))
+          : [];
+        setJoinedInitiatives(mappedInitiatives);
+      } catch (error) {
+        console.error("Error fetching joined initiatives:", error);
+        toast.error("Failed to load your joined initiatives. Please try again.");
+        setJoinedInitiatives([]);
+      } finally {
+        setLoadingJoinedInitiatives(false);
+      }
+    };
+
+    fetchAllInitiatives();
+    fetchJoinedInitiatives();
+  }, [user]);
+
+  // Filter allInitiatives to exclude those already joined
+  const notJoinedInitiatives = allInitiatives.filter(
+    initiative => !joinedInitiatives.some(joined => joined.id === initiative.id)
+  );
+
+  const handleJoinInitiative = async (initiative: Initiative) => {
+    if (!user || !user.email) {
+      toast.error("Please log in to join an initiative");
+      return;
+    }
+
+    // Add initiative to processingInitiativeIds
+    setProcessingInitiativeIds(prev => [...prev, initiative.id]);
+
+    try {
+      await linkDonorToInitiativeAPI(user.email, initiative.id);
+      
+      // Add initiative to joinedInitiatives
+      setJoinedInitiatives(prev => [...prev, initiative]);
+      
+      toast.success(`Successfully joined: ${initiative.initiativeName}`);
+    } catch (error) {
+      console.error("Error joining initiative:", error);
+      toast.error(`Failed to join initiative: ${(error as Error).message}`);
+    } finally {
+      // Remove initiative from processingInitiativeIds
+      setProcessingInitiativeIds(prev => prev.filter(id => id !== initiative.id));
+    }
+  };
+
+  const handleLeaveInitiative = async (initiative: Initiative) => {
+    if (!user || !user.email || !user.id) {
+      toast.error("Please log in to leave an initiative");
+      return;
+    }
+
+    // Add initiative to processingInitiativeIds
+    setProcessingInitiativeIds(prev => [...prev, initiative.id]);
+
+    try {
+      await unlinkDonorFromInitiativeAPI(user.email, user.id, initiative.id);
+      
+      // Remove initiative from joinedInitiatives
+      setJoinedInitiatives(prev => prev.filter(i => i.id !== initiative.id));
+      
+      toast.success(`Successfully left: ${initiative.initiativeName}`);
+    } catch (error) {
+      console.error("Error leaving initiative:", error);
+      toast.error(`Failed to leave initiative: ${(error as Error).message}`);
+    } finally {
+      // Remove initiative from processingInitiativeIds
+      setProcessingInitiativeIds(prev => prev.filter(id => id !== initiative.id));
+    }
+  };
+
+  const handleCreateCampaign = (initiative: Initiative) => {
+    // Navigate to create campaign page with initiative pre-selected
+    navigate('/create-campaign', { 
+      state: { 
+        initiativeId: initiative.id,
+        initiativeName: initiative.initiativeName,
+        seedQuestions: initiative.seedQuestions
+      }
+    });
+  };
 
   if (!user) {
     return <Navigate to="/login" />;
@@ -230,20 +330,23 @@ const Dashboard: React.FC = () => {
 
             <TabsContent value="initiatives" className="space-y-8">
               {/* My Joined Initiatives */}
-              {joinedInitiatives.length > 0 && (
-                <InitiativeSection 
-                  title="My Joined Initiatives" 
-                  initiatives={joinedInitiatives}
-                  loading={loadingInitiatives}
-                  joined={true}
-                />
-              )}
+              <InitiativeSection 
+                title="My Joined Initiatives" 
+                initiatives={joinedInitiatives}
+                loading={loadingJoinedInitiatives}
+                joined={true}
+                onLeaveInitiative={handleLeaveInitiative}
+                onCreateCampaign={handleCreateCampaign}
+                processingInitiativeIds={processingInitiativeIds}
+              />
 
               {/* Explore Initiatives */}
               <InitiativeSection 
                 title="Explore Initiatives" 
-                initiatives={initiatives}
-                loading={loadingInitiatives}
+                initiatives={notJoinedInitiatives}
+                loading={loadingAllInitiatives}
+                onJoinInitiative={handleJoinInitiative}
+                processingInitiativeIds={processingInitiativeIds}
               />
             </TabsContent>
           </Tabs>

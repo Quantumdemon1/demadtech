@@ -1,4 +1,3 @@
-
 // API Client Service for communicating with the backend
 // Backend URL is loaded from environment variable VITE_API_BASE_URL
 
@@ -144,6 +143,67 @@ export const getAllInitiativesAPI = (loginUsername: string) => {
     });
 };
 
+/**
+ * Get initiatives joined by a donor
+ * @param loginUsername - The username of the authenticated donor
+ * @returns Promise with donor's joined initiatives
+ */
+export const getDonorJoinedInitiativesAPI = (loginUsername: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to fetch joined initiatives."));
+    }
+    return request(`/donor/initiatives?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'GET',
+    });
+};
+
+/**
+ * Link a donor to an initiative (join)
+ * @param loginUsername - The username of the authenticated donor
+ * @param initiativeGuid - The ID of the initiative to join
+ * @returns Promise with the created donor-initiative link
+ */
+export const linkDonorToInitiativeAPI = (loginUsername: string, initiativeGuid: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to join an initiative."));
+    }
+    return request(`/donor/initiative?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'POST',
+        body: JSON.stringify({ initiativeGuid }),
+    });
+};
+
+/**
+ * Unlink a donor from an initiative (leave)
+ * @param loginUsername - The username of the authenticated donor
+ * @param donorGuid - The ID of the donor
+ * @param initiativeGuid - The ID of the initiative to leave
+ * @returns Promise with the response
+ */
+export const unlinkDonorFromInitiativeAPI = (loginUsername: string, donorGuid: string, initiativeGuid: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to leave an initiative."));
+    }
+    return request(`/donor/initiative?loginUsername=${encodeURIComponent(loginUsername)}&donorGuid=${encodeURIComponent(donorGuid)}&initiativeId=${encodeURIComponent(initiativeGuid)}`, {
+        method: 'DELETE',
+    });
+};
+
+/**
+ * Get assets for an initiative
+ * @param loginUsername - The username of the authenticated user
+ * @param initiativeGuid - The ID of the initiative
+ * @returns Promise with initiative assets
+ */
+export const getInitiativeAssetsAPI = (loginUsername: string, initiativeGuid: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to fetch initiative assets."));
+    }
+    return request(`/initiative/assets?loginUsername=${encodeURIComponent(loginUsername)}&initiativeId=${encodeURIComponent(initiativeGuid)}`, {
+        method: 'GET',
+    });
+};
+
 // === AD CAMPAIGN API ENDPOINTS ===
 
 /**
@@ -178,5 +238,43 @@ export const createAdCampaignAPI = (loginUsername: string, campaignData: {
     return request(`/ad-campaign?loginUsername=${encodeURIComponent(loginUsername)}`, {
         method: 'PUT',
         body: JSON.stringify(campaignData),
+    });
+};
+
+/**
+ * Get ad creatives for an ad campaign
+ * @param loginUsername - The username of the authenticated user
+ * @param adCampaignGuid - The ID of the ad campaign
+ * @returns Promise with ad creatives for the campaign
+ */
+export const getAdCreativesAPI = (loginUsername: string, adCampaignGuid: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to fetch ad creatives."));
+    }
+    return request(`/ad-campaign/ad-creatives?loginUsername=${encodeURIComponent(loginUsername)}&adCampaignGuid=${encodeURIComponent(adCampaignGuid)}`, {
+        method: 'GET',
+    });
+};
+
+/**
+ * Create or update an ad creative
+ * @param loginUsername - The username of the authenticated user
+ * @param creativeData - Object containing ad creative details
+ * @returns Promise with the created/updated ad creative data
+ */
+export const upsertAdCreativeAPI = (loginUsername: string, creativeData: {
+    adCampaignGuid: string;
+    adCreativeGuid?: string; // Include for updates, omit for creation
+    name: string;
+    caption: string;
+    adCreativePayload: string; // Base64 image string
+    sourceAssetGuid?: string; // Optional initiative asset GUID
+}) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to create/update an ad creative."));
+    }
+    return request(`/ad-campaign/ad-creative?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'PUT',
+        body: JSON.stringify(creativeData),
     });
 };
