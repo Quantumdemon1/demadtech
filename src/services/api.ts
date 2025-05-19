@@ -1,4 +1,3 @@
-
 // API Client Service for communicating with the backend
 // Backend URL is loaded from environment variable VITE_API_BASE_URL
 
@@ -345,21 +344,6 @@ export const unlinkDonorFromInitiativeAPI = (loginUsername: string, donorGuid: s
     }
     return request(`/donor/initiative?loginUsername=${encodeURIComponent(loginUsername)}&donorGuid=${encodeURIComponent(donorGuid)}&initiativeId=${encodeURIComponent(initiativeGuid)}`, {
         method: 'DELETE',
-    });
-};
-
-/**
- * Get assets for an initiative
- * @param loginUsername - The username of the authenticated user
- * @param initiativeGuid - The ID of the initiative
- * @returns Promise with initiative assets
- */
-export const getInitiativeAssetsAPI = (loginUsername: string, initiativeGuid: string) => {
-    if (!loginUsername) {
-        return Promise.reject(new Error("loginUsername is required to fetch initiative assets."));
-    }
-    return request(`/initiative/assets?loginUsername=${encodeURIComponent(loginUsername)}&initiativeId=${encodeURIComponent(initiativeGuid)}`, {
-        method: 'GET',
     });
 };
 
