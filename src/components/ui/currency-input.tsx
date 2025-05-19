@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Input, InputProps } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 
-interface CurrencyInputProps extends Omit<InputProps, 'onChange'> {
+// Define our own InputProps type based on HTMLInputElement
+interface CurrencyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   value: string;
   onChange: (value: string) => void;
 }

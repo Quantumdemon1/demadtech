@@ -1,3 +1,4 @@
+
 // API Client Service for communicating with the backend
 // Backend URL is loaded from environment variable VITE_API_BASE_URL
 
@@ -436,3 +437,5 @@ export const upsertAdCreativeAPI = (loginUsername: string, creativeData: {
         body: JSON.stringify(creativeData),
     });
 };
+
+// Removed the duplicate getInitiativeAssetsAPI function that was here

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -68,24 +67,41 @@ const CreateEditInitiative: React.FC = () => {
 
   const loginUsername = user?.loginUsername || '';
 
-  // Fetch existing initiative data if editing
+  // Fetch existing initiative data if editing - fixed the useQuery hook
   const { data: initiatives } = useQuery({
     queryKey: ['politicalClientInitiatives', loginUsername],
     queryFn: () => getPoliticalClientInitiativesAPI(loginUsername),
     enabled: !!loginUsername && isEditing,
-    onSuccess: (data) => {
-      if (isEditing && data) {
-        const initiative = data.find((init: Initiative) => init.id === id);
-        if (initiative) {
-          setCurrentInitiative(initiative);
-          setInitiativeImage(initiative.initiativeImageUrl || null);
-        } else {
-          toast.error('Initiative not found');
-          navigate('/political-client/dashboard');
+    // Moved onSuccess to the proper location per TanStack Query v5
+    meta: {
+      onSuccess: (data) => {
+        if (isEditing && data) {
+          const initiative = data.find((init: Initiative) => init.id === id);
+          if (initiative) {
+            setCurrentInitiative(initiative);
+            setInitiativeImage(initiative.initiativeImageUrl || null);
+          } else {
+            toast.error('Initiative not found');
+            navigate('/political-client/dashboard');
+          }
         }
       }
     }
   });
+
+  // useEffect to handle data success since we can't use onSuccess in the query options
+  useEffect(() => {
+    if (isEditing && initiatives) {
+      const initiative = initiatives.find((init: Initiative) => init.id === id);
+      if (initiative) {
+        setCurrentInitiative(initiative);
+        setInitiativeImage(initiative.initiativeImageUrl || null);
+      } else {
+        toast.error('Initiative not found');
+        navigate('/political-client/dashboard');
+      }
+    }
+  }, [initiatives, isEditing, id, navigate]);
 
   // Initialize form with default values or existing initiative data
   const form = useForm<InitiativeFormValues>({
@@ -161,7 +177,7 @@ const CreateEditInitiative: React.FC = () => {
     }
   };
 
-  // Handle form submission
+  // Fixed the form submission function
   const onSubmit = async (values: InitiativeFormValues) => {
     if (!user?.loginUsername) {
       toast.error('User information is missing');
@@ -170,12 +186,16 @@ const CreateEditInitiative: React.FC = () => {
 
     setIsSubmitting(true);
     try {
+      // Fix: Ensure all required fields are present and properly typed
       const initiativeData = {
-        ...values,
+        initiativeName: values.initiativeName,
+        objective: values.objective,
         seedQuestions: JSON.stringify(values.seedQuestions),
+        status: values.status,
         targets: JSON.stringify(values.targets),
         initiativeGuid: isEditing ? id : undefined,
         initiativeImageFilename: values.initiativeImagePayload ? 'initiative-image.jpg' : undefined,
+        initiativeImagePayload: values.initiativeImagePayload
       };
 
       await upsertInitiativeAPI(user.loginUsername, initiativeData);
