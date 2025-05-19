@@ -127,3 +127,56 @@ export const createPoliticalClientAPI = (clientData: {
         body: JSON.stringify(clientData),
     });
 };
+
+// === INITIATIVE API ENDPOINTS ===
+
+/**
+ * Get all initiatives
+ * @param loginUsername - The username of the authenticated user
+ * @returns Promise with all initiatives data
+ */
+export const getAllInitiativesAPI = (loginUsername: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to fetch initiatives."));
+    }
+    return request(`/initiatives/all?loginUsername=${encodeURIComponent(loginUsername)}`, { 
+        method: 'GET' 
+    });
+};
+
+// === AD CAMPAIGN API ENDPOINTS ===
+
+/**
+ * Get ad campaigns for a donor
+ * @param loginUsername - The username of the authenticated donor
+ * @returns Promise with all ad campaigns for the donor
+ */
+export const getDonorAdCampaignsAPI = (loginUsername: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to fetch ad campaigns."));
+    }
+    return request(`/ad-campaigns?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'GET',
+    });
+};
+
+/**
+ * Create a new ad campaign
+ * @param loginUsername - The username of the authenticated donor
+ * @param campaignData - Object containing campaign details
+ * @returns Promise with the created ad campaign data
+ */
+export const createAdCampaignAPI = (loginUsername: string, campaignData: {
+    name: string;
+    initiativeGuid: string;
+    description: string;
+    seedAnswers: { question: string; answer: string }[];
+}) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to create an ad campaign."));
+    }
+    return request(`/ad-campaign?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'PUT',
+        body: JSON.stringify(campaignData),
+    });
+};

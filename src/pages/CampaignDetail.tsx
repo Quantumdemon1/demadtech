@@ -4,57 +4,70 @@ import { useParams, Navigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import CampaignMetrics from '@/components/campaigns/CampaignMetrics';
 import useAuth from '@/hooks/useAuth';
-import { Campaign } from '@/types';
+import { Campaign, Initiative } from '@/types';
 import CampaignHeader from '@/components/campaigns/CampaignHeader';
 import CampaignDetailsPanel from '@/components/campaigns/CampaignDetailsPanel';
 import CampaignContentPanel from '@/components/campaigns/CampaignContentPanel';
 import LoadingState from '@/components/campaigns/LoadingState';
 import NotFoundState from '@/components/campaigns/NotFoundState';
+import { toast } from 'sonner';
+import { getDonorAdCampaignsAPI, getAllInitiativesAPI } from '@/services/api';
+import { mapBackendAdCampaignToCampaign, mapBackendInitiativeToInitiative } from '@/services/dataMapping';
 
 const CampaignDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [initiatives, setInitiatives] = useState<Initiative[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, we would fetch the campaign from an API
-    // For now, we'll just use dummy data
-    if (!id) return;
+    if (!id || !user || !user.email) {
+      setLoading(false);
+      return;
+    }
 
-    const mockCampaign: Campaign = {
-      id,
-      name: 'Support for Education Reform',
-      userId: user?.id || '',
-      contestId: '123',
-      contest: {
-        id: '123',
-        state: 'California',
-        district: '12',
-        electionDate: '2024-11-05',
-        democratFirstName: 'Jane',
-        democratLastName: 'Smith',
-        republicanFirstName: 'John',
-        republicanLastName: 'Doe',
-      },
-      contentType: 'formal',
-      contentText: 'Education is the foundation of our democracy. Vote for Jane Smith to ensure our schools get the funding they deserve.',
-      startDate: '2024-09-01',
-      endDate: '2024-11-04',
-      adSpend: 500,
-      status: 'active',
-      metrics: {
-        impressions: 5200,
-        clicks: 1200,
-        shares: 300,
-      },
-      createdAt: '2024-08-15',
+    const fetchCampaignData = async () => {
+      setLoading(true);
+      try {
+        // Fetch both campaigns and initiatives in parallel
+        const [campaignsResponse, initiativesResponse] = await Promise.all([
+          getDonorAdCampaignsAPI(user.email),
+          getAllInitiativesAPI(user.email)
+        ]);
+
+        // Map backend initiatives to frontend format
+        const mappedInitiatives = Array.isArray(initiativesResponse)
+          ? initiativesResponse.map(i => mapBackendInitiativeToInitiative(i))
+          : [];
+        setInitiatives(mappedInitiatives);
+
+        // Find the specific campaign by id
+        const backendCampaign = Array.isArray(campaignsResponse)
+          ? campaignsResponse.find(c => c.adCampaignGuid === id)
+          : null;
+
+        if (backendCampaign) {
+          // Find related initiative if available
+          const initiative = mappedInitiatives.find(i => i.id === backendCampaign.initiativeGuid);
+          
+          // Map to frontend campaign format
+          const mappedCampaign = mapBackendAdCampaignToCampaign(backendCampaign, initiative, user.id);
+          setCampaign(mappedCampaign);
+        } else {
+          setCampaign(null);
+          toast.error("Campaign not found");
+        }
+      } catch (error) {
+        console.error("Error fetching campaign data:", error);
+        toast.error("Failed to load campaign details. Please try again.");
+        setCampaign(null);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setTimeout(() => {
-      setCampaign(mockCampaign);
-      setLoading(false);
-    }, 1000);
+    fetchCampaignData();
   }, [id, user]);
 
   if (!user) {

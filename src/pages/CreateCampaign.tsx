@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import Header from '@/components/layout/Header';
@@ -10,11 +10,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { getAllInitiativesAPI, createAdCampaignAPI } from '@/services/api';
+import { Initiative } from '@/types';
+import { mapBackendInitiativeToInitiative, mapCampaignToAdCampaignRequest } from '@/services/dataMapping';
 
 const CreateCampaign: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingInitiatives, setIsLoadingInitiatives] = useState(false);
   
   // Campaign form state
   const [formData, setFormData] = useState({
@@ -26,19 +30,40 @@ const CreateCampaign: React.FC = () => {
     adSpend: 100,
   });
 
-  // Mock contest data - in a real app this would come from an API
-  const contests = [
-    { id: '1', state: 'California', district: '12', label: 'CA-12: Smith vs. Johnson' },
-    { id: '2', state: 'New York', district: '8', label: 'NY-8: Williams vs. Brown' },
-    { id: '3', state: 'Texas', district: '23', label: 'TX-23: Garcia vs. Miller' },
-  ];
-  
-  const [selectedContest, setSelectedContest] = useState<string>('');
+  // Initiative state
+  const [initiatives, setInitiatives] = useState<Initiative[]>([]);
+  const [selectedInitiativeGuid, setSelectedInitiativeGuid] = useState<string>('');
+  const [selectedInitiative, setSelectedInitiative] = useState<Initiative | null>(null);
+  const [seedAnswers, setSeedAnswers] = useState<Record<string, string>>({});
   
   // Redirect to login if not authenticated
   if (!user) {
     return <Navigate to="/login" />;
   }
+  
+  // Fetch initiatives on component mount
+  useEffect(() => {
+    const fetchInitiatives = async () => {
+      if (!user?.email) return;
+      
+      setIsLoadingInitiatives(true);
+      try {
+        const response = await getAllInitiativesAPI(user.email);
+        const mappedInitiatives = Array.isArray(response) 
+          ? response.map(i => mapBackendInitiativeToInitiative(i))
+          : [];
+        setInitiatives(mappedInitiatives);
+      } catch (error) {
+        console.error("Error fetching initiatives:", error);
+        toast.error("Failed to load initiatives. Please try again.");
+        setInitiatives([]);
+      } finally {
+        setIsLoadingInitiatives(false);
+      }
+    };
+    
+    fetchInitiatives();
+  }, [user]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -55,44 +80,64 @@ const CreateCampaign: React.FC = () => {
     }));
   };
   
+  const handleInitiativeSelect = (value: string) => {
+    setSelectedInitiativeGuid(value);
+    const initiative = initiatives.find(i => i.id === value) || null;
+    setSelectedInitiative(initiative);
+    setSeedAnswers({}); // Reset answers when initiative changes
+  };
+  
+  const handleSeedAnswerChange = (question: string, answer: string) => {
+    setSeedAnswers(prev => ({
+      ...prev,
+      [question]: answer
+    }));
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedContest) {
-      toast.error("Please select a contest");
+    if (!selectedInitiativeGuid) {
+      toast.error("Please select an initiative");
       return;
     }
     
     try {
       setIsSubmitting(true);
       
-      // In a real app, this would be an API call
-      // Simulating a network request
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!user?.email) {
+        throw new Error("User not authenticated");
+      }
       
-      // Create a new campaign object
-      const newCampaign = {
-        id: `campaign-${Date.now()}`,
-        name: formData.name,
-        userId: user.id,
-        contestId: selectedContest,
-        contentType: formData.contentType as 'funny' | 'personal' | 'formal',
-        contentText: formData.contentText,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        adSpend: Number(formData.adSpend),
-        status: 'draft',
-        createdAt: new Date().toISOString(),
-      };
+      // Prepare seed answers in the format expected by the API
+      const formattedSeedAnswers = selectedInitiative?.seedQuestions 
+        ? selectedInitiative.seedQuestions.map(question => ({
+            question,
+            answer: seedAnswers[question] || ''
+          }))
+        : [];
       
-      // In a real app, this would be saved to a database
-      // For now, we'll just save to localStorage
-      const campaigns = JSON.parse(localStorage.getItem('campaigns') || '[]');
-      campaigns.push(newCampaign);
-      localStorage.setItem('campaigns', JSON.stringify(campaigns));
+      // Create ad campaign request object
+      const campaignRequest = mapCampaignToAdCampaignRequest(
+        {
+          name: formData.name,
+          contestId: selectedInitiativeGuid,
+          contentText: formData.contentText,
+        },
+        formattedSeedAnswers
+      );
+      
+      // Send request to API
+      const response = await createAdCampaignAPI(user.email, campaignRequest);
       
       toast.success("Campaign created successfully!");
-      navigate(`/campaigns/${newCampaign.id}`);
+      
+      // Navigate to the campaign detail page using the returned adCampaignGuid
+      if (response && response.adCampaignGuid) {
+        navigate(`/campaigns/${response.adCampaignGuid}`);
+      } else {
+        navigate('/dashboard'); // Fallback if no ID returned
+      }
     } catch (error) {
       console.error("Error creating campaign:", error);
       toast.error("Failed to create campaign. Please try again.");
@@ -135,21 +180,26 @@ const CreateCampaign: React.FC = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="contest">Select Contest</Label>
-                  <Select value={selectedContest} onValueChange={(value) => setSelectedContest(value)}>
-                    <SelectTrigger id="contest">
-                      <SelectValue placeholder="Select a political contest" />
+                  <Label htmlFor="initiative">Select Initiative</Label>
+                  <Select 
+                    value={selectedInitiativeGuid} 
+                    onValueChange={handleInitiativeSelect} 
+                    disabled={isLoadingInitiatives}
+                  >
+                    <SelectTrigger id="initiative">
+                      <SelectValue placeholder={isLoadingInitiatives ? "Loading initiatives..." : "Select an initiative"} />
                     </SelectTrigger>
                     <SelectContent>
-                      {contests.map((contest) => (
-                        <SelectItem key={contest.id} value={contest.id}>
-                          {contest.label}
+                      {initiatives.map((initiative) => (
+                        <SelectItem key={initiative.id} value={initiative.id}>
+                          {initiative.initiativeName}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 
+                {/* These fields are kept for UI consistency but not sent to backend in this phase */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="startDate">Start Date</Label>
@@ -217,18 +267,38 @@ const CreateCampaign: React.FC = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="contentText">Ad Content</Label>
+                  <Label htmlFor="contentText">Campaign Description</Label>
                   <Textarea
                     id="contentText"
                     name="contentText"
                     value={formData.contentText}
                     onChange={handleInputChange}
-                    placeholder="Write the content for your advertisement..."
+                    placeholder="Write the main description for your campaign..."
                     rows={5}
                     required
                   />
                 </div>
                 
+                {/* Dynamic seed questions based on selected initiative */}
+                {selectedInitiative && selectedInitiative.seedQuestions && selectedInitiative.seedQuestions.length > 0 && (
+                  <div className="space-y-4 mt-4 border-t pt-4">
+                    <h3 className="text-md font-semibold">Initiative Questions:</h3>
+                    {selectedInitiative.seedQuestions.map((question, index) => (
+                      <div className="space-y-2" key={index}>
+                        <Label htmlFor={`seed-question-${index}`}>{question}</Label>
+                        <Textarea
+                          id={`seed-question-${index}`}
+                          placeholder={`Your answer to: "${question}"`}
+                          value={seedAnswers[question] || ''}
+                          onChange={(e) => handleSeedAnswerChange(question, e.target.value)}
+                          rows={2}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Image upload kept for UI consistency but not sent to backend in this phase */}
                 <div className="space-y-2">
                   <Label htmlFor="contentImage">Image Upload (Optional)</Label>
                   <Input
@@ -254,7 +324,7 @@ const CreateCampaign: React.FC = () => {
                 <Button 
                   type="submit" 
                   className="bg-campaign-orange hover:bg-campaign-orange-dark"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isLoadingInitiatives}
                 >
                   {isSubmitting ? 'Creating...' : 'Create Campaign'}
                 </Button>
