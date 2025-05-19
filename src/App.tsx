@@ -25,7 +25,16 @@ import ClientGrantAwardPage from "./pages/political-client/ClientGrantAwardPage"
 import NotFound from "./pages/NotFound";
 import Splash from "./pages/Splash";
 
-const queryClient = new QueryClient();
+// Create a new React Query client with custom options
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30000, // 30 seconds
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -44,9 +53,12 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/campaigns/:id" element={<CampaignDetail />} />
             <Route path="/create-campaign" element={<CreateCampaign />} />
+            
+            {/* Admin Routes */}
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/campaign-approval" element={<AdminCampaignApproval />} />
             <Route path="/admin/manage-awards" element={<AdminManageAwards />} />
+            
             {/* Political Client Routes */}
             <Route path="/political-client/dashboard" element={<PoliticalClientDashboard />} />
             <Route path="/political-client/profile" element={<PoliticalClientProfile />} />
@@ -55,7 +67,8 @@ const App = () => (
             <Route path="/political-client/initiative/assets/:id" element={<ManageInitiativeAssets />} />
             <Route path="/political-client/payments" element={<ClientPaymentsPage />} />
             <Route path="/political-client/awards" element={<ClientGrantAwardPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            
+            {/* Catch-all for unmatched routes */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

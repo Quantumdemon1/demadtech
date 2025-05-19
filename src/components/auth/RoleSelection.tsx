@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { UserIcon, BuildingIcon, ShieldIcon } from 'lucide-react';
+import { User, Building, Shield } from 'lucide-react';
 
 export type UserRole = 'donor' | 'politicalClient' | 'admin';
 
@@ -14,7 +14,7 @@ interface RoleSelectionProps {
 const RoleSelection: React.FC<RoleSelectionProps> = ({
   selectedRole,
   onRoleSelect,
-  showAdmin = false,
+  showAdmin = true, // Changed default to true to enable admin selection
 }) => {
   return (
     <div className="space-y-4">
@@ -28,7 +28,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           onClick={() => onRoleSelect('donor')}
         >
           <div className="flex flex-col items-center">
-            <UserIcon className="h-6 w-6 mb-1" />
+            <User className="h-6 w-6 mb-1" />
             <span>Donor</span>
             <span className="text-xs text-muted-foreground mt-1">Support campaigns with donations</span>
           </div>
@@ -42,7 +42,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           onClick={() => onRoleSelect('politicalClient')}
         >
           <div className="flex flex-col items-center">
-            <BuildingIcon className="h-6 w-6 mb-1" />
+            <Building className="h-6 w-6 mb-1" />
             <span>Political Organization</span>
             <span className="text-xs text-muted-foreground mt-1">Create initiatives and manage donors</span>
           </div>
@@ -51,13 +51,13 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
         {showAdmin && (
           <Button
             variant={selectedRole === 'admin' ? 'default' : 'outline'}
-            className={`flex items-center justify-center h-20 ${
+            className={`flex items-center justify-center h-20 md:col-span-2 ${
               selectedRole === 'admin' ? 'ring-2 ring-campaign-orange' : ''
             }`}
             onClick={() => onRoleSelect('admin')}
           >
             <div className="flex flex-col items-center">
-              <ShieldIcon className="h-6 w-6 mb-1" />
+              <Shield className="h-6 w-6 mb-1" />
               <span>Administrator</span>
               <span className="text-xs text-muted-foreground mt-1">Manage platform and all accounts</span>
             </div>

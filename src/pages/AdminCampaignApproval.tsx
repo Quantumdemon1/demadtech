@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, Link } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import useAuth from '@/hooks/useAuth';
 import Header from '@/components/layout/Header';
 import { 
@@ -36,124 +37,74 @@ import {
   CheckCircle, 
   XCircle, 
   Eye,
-  ArrowLeft
+  ArrowLeft,
+  Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Campaign } from '@/types';
+import { getUnapprovedAdCampaignsAdminAPI, updateAdCampaignStatusAdminAPI } from '@/services/api';
 
 const AdminCampaignApproval: React.FC = () => {
-  const { user, loading } = useAuth();
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [loadingCampaigns, setLoadingCampaigns] = useState(true);
+  const { user, loading: authLoading } = useAuth();
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
+  const queryClient = useQueryClient();
 
-  // Mock data: pending campaigns
-  React.useEffect(() => {
-    // In a real app, this would be an API call to get pending campaigns
-    const mockPendingCampaigns: Campaign[] = [
-      {
-        id: 'camp-1',
-        name: 'Education Reform Support',
-        userId: 'user-123',
-        contestId: 'contest-1',
-        contentType: 'formal',
-        contentText: 'Support better education funding in our schools.',
-        startDate: '2024-06-01',
-        endDate: '2024-07-01',
-        adSpend: 500,
-        status: 'pending',
-        createdAt: '2024-05-10',
-        contest: {
-          id: 'contest-1',
-          state: 'California',
-          district: '12',
-          electionDate: '2024-11-05',
-          democratFirstName: 'Jane',
-          democratLastName: 'Smith',
-          republicanFirstName: 'John',
-          republicanLastName: 'Doe',
-        }
-      },
-      {
-        id: 'camp-2',
-        name: 'Healthcare Initiative',
-        userId: 'user-456',
-        contestId: 'contest-2',
-        contentType: 'personal',
-        contentText: 'My family benefited from healthcare reform. Support Jane Smith.',
-        startDate: '2024-06-15',
-        endDate: '2024-07-15',
-        adSpend: 750,
-        status: 'pending',
-        createdAt: '2024-05-12',
-        contest: {
-          id: 'contest-2',
-          state: 'New York',
-          district: '8',
-          electionDate: '2024-11-05',
-          democratFirstName: 'David',
-          democratLastName: 'Johnson',
-          republicanFirstName: 'Sarah',
-          republicanLastName: 'Williams',
-        }
-      },
-      {
-        id: 'camp-3',
-        name: 'Climate Action',
-        userId: 'user-789',
-        contestId: 'contest-1',
-        contentType: 'funny',
-        contentText: 'Climate change is no joke, but this ad is! Vote for change.',
-        startDate: '2024-07-01',
-        endDate: '2024-08-01',
-        adSpend: 600,
-        status: 'pending',
-        createdAt: '2024-05-14',
-        contest: {
-          id: 'contest-1',
-          state: 'California',
-          district: '12',
-          electionDate: '2024-11-05',
-          democratFirstName: 'Jane',
-          democratLastName: 'Smith',
-          republicanFirstName: 'John',
-          republicanLastName: 'Doe',
-        }
+  // Fetch unapproved campaigns
+  const { 
+    data: campaigns = [], 
+    isLoading: loadingCampaigns, 
+    error 
+  } = useQuery({
+    queryKey: ['unapproved-campaigns', user?.loginUsername],
+    queryFn: () => user?.loginUsername ? getUnapprovedAdCampaignsAdminAPI(user.loginUsername) : Promise.reject('No user'),
+    enabled: !!user?.loginUsername && user?.role === 'admin',
+    select: data => data?.campaigns || []
+  });
+
+  // Mutation for updating campaign status
+  const updateCampaignMutation = useMutation({
+    mutationFn: ({ 
+      adCampaignId, 
+      status 
+    }: { 
+      adCampaignId: string, 
+      status: 'approved' | 'rejected' 
+    }) => {
+      if (!user?.loginUsername) {
+        throw new Error("Not authenticated");
       }
-    ];
-
-    // Simulate API delay
-    setTimeout(() => {
-      setCampaigns(mockPendingCampaigns);
-      setLoadingCampaigns(false);
-    }, 800);
-  }, []);
+      return updateAdCampaignStatusAdminAPI(user.loginUsername, adCampaignId, status);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['unapproved-campaigns'] });
+    }
+  });
 
   // Function to handle campaign approval
   const handleApprove = (campaign: Campaign) => {
-    // In a real app, this would be an API call to update the campaign status
-    console.log('Approving campaign:', campaign.id);
-    toast.success(`Campaign "${campaign.name}" has been approved`);
-    
-    // Update local state to reflect the change
-    setCampaigns(prevCampaigns => 
-      prevCampaigns.filter(c => c.id !== campaign.id)
-    );
+    toast.promise(updateCampaignMutation.mutateAsync({
+      adCampaignId: campaign.id,
+      status: 'approved'
+    }), {
+      loading: `Approving campaign "${campaign.name}"...`,
+      success: `Campaign "${campaign.name}" has been approved`,
+      error: (err) => `Failed to approve: ${err.message || 'Unknown error'}`
+    });
   };
 
   // Function to handle campaign rejection
   const handleReject = (campaign: Campaign) => {
-    // In a real app, this would be an API call to update the campaign status
-    console.log('Rejecting campaign:', campaign.id);
-    toast.error(`Campaign "${campaign.name}" has been rejected`);
-    
-    // Update local state to reflect the change
-    setCampaigns(prevCampaigns => 
-      prevCampaigns.filter(c => c.id !== campaign.id)
-    );
+    toast.promise(updateCampaignMutation.mutateAsync({
+      adCampaignId: campaign.id,
+      status: 'rejected'
+    }), {
+      loading: `Rejecting campaign "${campaign.name}"...`,
+      success: `Campaign "${campaign.name}" has been rejected`,
+      error: (err) => `Failed to reject: ${err.message || 'Unknown error'}`
+    });
   };
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="flex min-h-screen flex-col">
         <Header />
@@ -165,6 +116,27 @@ const AdminCampaignApproval: React.FC = () => {
   // Protect the route: only admins should access this page
   if (!user || user.role !== 'admin') {
     return <Navigate to="/login" />;
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="container flex-1 py-8">
+          <div className="mb-6">
+            <Link to="/admin/dashboard" className="inline-flex items-center text-sm text-campaign-orange hover:underline mb-2">
+              <ArrowLeft className="mr-1 h-4 w-4" /> Back to Dashboard
+            </Link>
+            <h1 className="text-3xl font-bold tracking-tight">Campaign Approvals</h1>
+          </div>
+          <Card>
+            <CardContent className="py-8 text-center text-muted-foreground">
+              An error occurred: {(error as Error).message || 'Failed to fetch campaigns'}
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -190,7 +162,9 @@ const AdminCampaignApproval: React.FC = () => {
           </CardHeader>
           <CardContent>
             {loadingCampaigns ? (
-              <div className="py-8 text-center text-muted-foreground">Loading campaigns...</div>
+              <div className="py-8 text-center text-muted-foreground flex items-center justify-center">
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Loading campaigns...
+              </div>
             ) : campaigns.length > 0 ? (
               <Table>
                 <TableHeader>
@@ -229,6 +203,7 @@ const AdminCampaignApproval: React.FC = () => {
                                 variant="default" 
                                 size="sm" 
                                 className="bg-green-600 hover:bg-green-700"
+                                disabled={updateCampaignMutation.isPending}
                               >
                                 <CheckCircle className="h-4 w-4 mr-1" /> Approve
                               </Button>
@@ -257,6 +232,7 @@ const AdminCampaignApproval: React.FC = () => {
                               <Button 
                                 variant="destructive" 
                                 size="sm"
+                                disabled={updateCampaignMutation.isPending}
                               >
                                 <XCircle className="h-4 w-4 mr-1" /> Reject
                               </Button>
@@ -350,6 +326,7 @@ const AdminCampaignApproval: React.FC = () => {
                       handleReject(selectedCampaign);
                       setSelectedCampaign(null);
                     }}
+                    disabled={updateCampaignMutation.isPending}
                   >
                     Reject Campaign
                   </Button>
@@ -359,6 +336,7 @@ const AdminCampaignApproval: React.FC = () => {
                       handleApprove(selectedCampaign);
                       setSelectedCampaign(null);
                     }}
+                    disabled={updateCampaignMutation.isPending}
                   >
                     Approve Campaign
                   </Button>

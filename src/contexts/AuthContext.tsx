@@ -2,8 +2,21 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { User, AuthContextType } from '@/types';
 import { toast } from 'sonner';
-import { getDonorAPI, createDonorAPI, updateDonorAPI, getPoliticalClientAPI, createPoliticalClientAPI } from '@/services/api';
-import { mapDonorToUser, mapPoliticalClientToUser, mapUserToDonorRequest, mapUserToPoliticalClientRequest } from '@/services/dataMapping';
+import { 
+  getDonorAPI, 
+  createDonorAPI, 
+  updateDonorAPI, 
+  getPoliticalClientAPI, 
+  createPoliticalClientAPI, 
+  getAdminDetailsAPI
+} from '@/services/api';
+import { 
+  mapDonorToUser, 
+  mapPoliticalClientToUser, 
+  mapUserToDonorRequest, 
+  mapUserToPoliticalClientRequest,
+  mapAdminToUser
+} from '@/services/dataMapping';
 import { setCookie, removeCookie } from '@/utils/cookieUtils';
 
 // Create AuthContext
@@ -40,6 +53,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (role === 'politicalClient') {
         const clientData = await getPoliticalClientAPI(emailOrUsername);
         userData = mapPoliticalClientToUser(clientData);
+      } else if (role === 'admin') {
+        const adminData = await getAdminDetailsAPI(emailOrUsername);
+        userData = mapAdminToUser(adminData);
       } else {
         // Default to donor login if role is not specified or is 'donor'
         const donorData = await getDonorAPI(emailOrUsername);
@@ -134,7 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signup, 
       politicalClientSignup, 
       logout,
-      updateUserProfile // Add this to the context value
+      updateUserProfile
     }}>
       {children}
     </AuthContext.Provider>

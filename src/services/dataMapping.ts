@@ -1,4 +1,3 @@
-
 import { User, Campaign, Contest, Initiative } from "@/types";
 
 /**
@@ -171,3 +170,19 @@ export function mapCampaignToAdCampaignRequest(campaign: Partial<Campaign>, seed
     seedAnswers,
   };
 }
+
+/**
+ * Maps admin data from the backend to the frontend User type
+ * @param adminData - The admin data from the backend API
+ * @returns User object with admin role
+ */
+export const mapAdminToUser = (adminData: any): User => {
+  return {
+    id: adminData.adminGuid,
+    loginUsername: adminData.loginUsername,
+    firstName: adminData.name?.split(' ')[0] || '',
+    lastName: adminData.name?.split(' ').slice(1).join(' ') || '',
+    role: 'admin',
+    createdAt: adminData.createdAt || new Date().toISOString(),
+  };
+};
