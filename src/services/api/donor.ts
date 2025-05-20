@@ -3,43 +3,33 @@
 import { request } from './base';
 
 /**
- * Get donor details by loginUsername
- * @param loginUsername - The username of the donor to fetch
- * @returns Promise with donor data from the backend
+ * Get a specific donor by loginUsername
+ * @param loginUsername - The username of the authenticated donor
+ * @returns Promise with donor data
  */
 export const getDonorAPI = (loginUsername: string) => {
-    return request(`/donor?loginUsername=${encodeURIComponent(loginUsername)}`, { 
-        method: 'GET' 
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to fetch donor data."));
+    }
+    return request(`/donor?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'GET',
     });
 };
 
 /**
- * Create a new donor account
- * @param donorData - Object containing donorName, loginUsername, and loginPw
- * @returns Promise with the created donor data
- */
-export const createDonorAPI = (donorData: { 
-    donorName: string, 
-    loginUsername: string, 
-    loginPw: string 
-}) => {
-    return request('/donor', {
-        method: 'POST',
-        body: JSON.stringify(donorData),
-    });
-};
-
-/**
- * Update an existing donor account
- * @param loginUsername - The username of the donor to update
+ * Update donor profile
+ * @param loginUsername - The username of the authenticated donor
  * @param donorData - Object containing fields to update
  * @returns Promise with the updated donor data
  */
 export const updateDonorAPI = (loginUsername: string, donorData: {
-    donorName?: string,
-    profileImageFilename?: string,
-    profileImagePayload?: string
+    donorName?: string;
+    profileImageFilename?: string;
+    profileImagePayload?: string;
 }) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to update donor profile."));
+    }
     return request(`/donor?loginUsername=${encodeURIComponent(loginUsername)}`, {
         method: 'PUT',
         body: JSON.stringify(donorData),
@@ -47,47 +37,16 @@ export const updateDonorAPI = (loginUsername: string, donorData: {
 };
 
 /**
- * Get initiatives joined by a donor
- * @param loginUsername - The username of the authenticated donor
- * @returns Promise with donor's joined initiatives
+ * Search donors by name or other criteria
+ * @param loginUsername - The username of the authenticated political client
+ * @param searchQuery - The search string to find donors
+ * @returns Promise with matching donors data
  */
-export const getDonorJoinedInitiativesAPI = (loginUsername: string) => {
+export const searchDonorsAPI = (loginUsername: string, searchQuery: string) => {
     if (!loginUsername) {
-        return Promise.reject(new Error("loginUsername is required to fetch joined initiatives."));
+        return Promise.reject(new Error("loginUsername is required to search donors."));
     }
-    return request(`/donor/initiatives?loginUsername=${encodeURIComponent(loginUsername)}`, {
+    return request(`/donors/search?loginUsername=${encodeURIComponent(loginUsername)}&q=${encodeURIComponent(searchQuery)}`, {
         method: 'GET',
-    });
-};
-
-/**
- * Link a donor to an initiative (join)
- * @param loginUsername - The username of the authenticated donor
- * @param initiativeGuid - The ID of the initiative to join
- * @returns Promise with the created donor-initiative link
- */
-export const linkDonorToInitiativeAPI = (loginUsername: string, initiativeGuid: string) => {
-    if (!loginUsername) {
-        return Promise.reject(new Error("loginUsername is required to join an initiative."));
-    }
-    return request(`/donor/initiative?loginUsername=${encodeURIComponent(loginUsername)}`, {
-        method: 'POST',
-        body: JSON.stringify({ initiativeGuid }),
-    });
-};
-
-/**
- * Unlink a donor from an initiative (leave)
- * @param loginUsername - The username of the authenticated donor
- * @param donorGuid - The ID of the donor
- * @param initiativeGuid - The ID of the initiative to leave
- * @returns Promise with the response
- */
-export const unlinkDonorFromInitiativeAPI = (loginUsername: string, donorGuid: string, initiativeGuid: string) => {
-    if (!loginUsername) {
-        return Promise.reject(new Error("loginUsername is required to leave an initiative."));
-    }
-    return request(`/donor/initiative?loginUsername=${encodeURIComponent(loginUsername)}&donorGuid=${encodeURIComponent(donorGuid)}&initiativeId=${encodeURIComponent(initiativeGuid)}`, {
-        method: 'DELETE',
     });
 };

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -8,10 +9,10 @@ import { Award as AwardIcon, CheckCircle } from 'lucide-react';
 import PoliticalClientLayout from '@/components/layout/PoliticalClientLayout';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import DonorSearch from '@/components/donors/DonorSearch';
 import useAuth from '@/hooks/useAuth';
 import { getPoliticalClientInitiativesAPI, getAllAwardsAPI, politicalClientGrantAwardAPI } from '@/services/api';
 import { Initiative, Award } from '@/types';
@@ -87,6 +88,10 @@ const ClientGrantAwardPage: React.FC = () => {
     });
   };
 
+  const handleDonorSelect = (donorGuid: string) => {
+    form.setValue('donorGuid', donorGuid);
+  };
+
   return (
     <PoliticalClientLayout title="Grant Awards">
       <div className="max-w-2xl mx-auto">
@@ -103,20 +108,22 @@ const ClientGrantAwardPage: React.FC = () => {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Donor ID */}
+                {/* Donor Selection */}
                 <FormField
                   control={form.control}
                   name="donorGuid"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Donor ID</FormLabel>
+                      <FormLabel>Select Donor</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter donor ID" {...field} />
+                        <DonorSearch 
+                          loginUsername={loginUsername}
+                          selectedDonorGuid={field.value}
+                          onSelect={handleDonorSelect}
+                          disabled={!loginUsername}
+                        />
                       </FormControl>
                       <FormMessage />
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Enter the unique identifier for the donor
-                      </p>
                     </FormItem>
                   )}
                 />
@@ -201,7 +208,22 @@ const ClientGrantAwardPage: React.FC = () => {
                     <FormItem>
                       <FormLabel>Ad Campaign ID (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter ad campaign ID" {...field} />
+                        <Select
+                          value={field.value || ''}
+                          onValueChange={field.onChange}
+                          disabled={!form.watch('donorGuid') || !form.watch('initiativeGuid')}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select ad campaign" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="">None</SelectItem>
+                            {/* We would add campaign options here when we have the API */}
+                            <SelectItem value="placeholder-campaign">Sample Campaign (placeholder)</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                       <p className="text-sm text-muted-foreground mt-1">
@@ -250,9 +272,9 @@ const ClientGrantAwardPage: React.FC = () => {
                 </p>
               </div>
               <div>
-                <h3 className="font-medium">Finding Donor IDs</h3>
+                <h3 className="font-medium">Finding Donor Information</h3>
                 <p className="text-sm text-muted-foreground">
-                  Currently, donors must provide you with their unique Donor ID. This can be found in their account settings.
+                  Use the donor search box above to find donors by name or email.
                 </p>
               </div>
             </CardContent>
