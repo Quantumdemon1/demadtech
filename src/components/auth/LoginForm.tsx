@@ -53,9 +53,9 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="animate-fade-in-up form-container">
+    <div className="animate-fade-in-up form-container shadow-lg">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Login</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome Back</h1>
         <p className="text-muted-foreground mt-2">
           Enter your credentials to access your account
         </p>
@@ -80,7 +80,7 @@ export const LoginForm: React.FC = () => {
         </>
       ) : (
         <>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label htmlFor="email" className="text-sm font-medium">
@@ -102,6 +102,7 @@ export const LoginForm: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="input-field"
+                autoComplete={selectedRole === 'politicalClient' ? 'username' : 'email'}
               />
             </div>
             
@@ -123,11 +124,13 @@ export const LoginForm: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   className="input-field pr-10"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
                 </button>
@@ -136,7 +139,7 @@ export const LoginForm: React.FC = () => {
             
             <Button
               type="submit"
-              className="w-full btn-primary"
+              className="w-full btn-primary transition-all duration-200 mt-6"
               disabled={isLoading}
             >
               {isLoading ? 'Logging in...' : 'Login'}
