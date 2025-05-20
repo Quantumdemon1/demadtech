@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
@@ -53,7 +52,7 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="form-container shadow-lg bg-white dark:bg-gray-800 p-8 rounded-lg">
+    <div className="form-container shadow-lg bg-white dark:bg-gray-800 p-8 rounded-lg w-full max-w-2xl mx-auto">
       <div className="text-center mb-12">
         <h1 className="text-3xl font-bold tracking-tight text-foreground mb-3">Welcome Back</h1>
         <p className="text-muted-foreground text-lg">

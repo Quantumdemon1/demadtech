@@ -22,7 +22,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Button
           variant="outline"
-          className={`flex flex-col items-center justify-center p-10 h-auto w-full transition-all duration-200
+          className={`flex flex-col items-center justify-center p-10 h-auto w-full min-h-[200px] transition-all duration-200
           ${selectedRole === 'donor' 
             ? 'border-campaign-orange ring-2 ring-campaign-orange ring-offset-2 bg-campaign-orange/10' 
             : 'hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md'
@@ -31,15 +31,15 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           data-selected={selectedRole === 'donor'}
         >
           <div className="flex flex-col items-center">
-            <User className="h-12 w-12 mb-4" />
+            <User className="h-14 w-14 mb-5" />
             <span className="text-xl font-semibold mb-3">Donor</span>
-            <span className="text-sm text-muted-foreground text-center leading-relaxed">Support campaigns with donations</span>
+            <span className="text-sm text-muted-foreground text-center leading-relaxed px-4">Support campaigns with donations</span>
           </div>
         </Button>
         
         <Button
           variant="outline"
-          className={`flex flex-col items-center justify-center p-10 h-auto w-full transition-all duration-200
+          className={`flex flex-col items-center justify-center p-10 h-auto w-full min-h-[200px] transition-all duration-200
           ${selectedRole === 'politicalClient' 
             ? 'border-campaign-orange ring-2 ring-campaign-orange ring-offset-2 bg-campaign-orange/10' 
             : 'hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md'
@@ -48,16 +48,16 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           data-selected={selectedRole === 'politicalClient'}
         >
           <div className="flex flex-col items-center">
-            <Building className="h-12 w-12 mb-4" />
+            <Building className="h-14 w-14 mb-5" />
             <span className="text-xl font-semibold mb-3">Political Organization</span>
-            <span className="text-sm text-muted-foreground text-center leading-relaxed">Create initiatives and manage donors</span>
+            <span className="text-sm text-muted-foreground text-center leading-relaxed px-4">Create initiatives and manage donors</span>
           </div>
         </Button>
         
         {showAdmin && (
           <Button
             variant="outline"
-            className={`flex flex-col items-center justify-center p-10 h-auto w-full md:col-span-2 transition-all duration-200
+            className={`flex flex-col items-center justify-center p-10 h-auto w-full md:col-span-2 min-h-[200px] transition-all duration-200
             ${selectedRole === 'admin' 
               ? 'border-campaign-orange ring-2 ring-campaign-orange ring-offset-2 bg-campaign-orange/10' 
               : 'hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md'
@@ -66,9 +66,9 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
             data-selected={selectedRole === 'admin'}
           >
             <div className="flex flex-col items-center">
-              <Shield className="h-12 w-12 mb-4" />
+              <Shield className="h-14 w-14 mb-5" />
               <span className="text-xl font-semibold mb-3">Administrator</span>
-              <span className="text-sm text-muted-foreground text-center leading-relaxed">Manage platform and all accounts</span>
+              <span className="text-sm text-muted-foreground text-center leading-relaxed px-4">Manage platform and all accounts</span>
             </div>
           </Button>
         )}
