@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import RoleSelection, { UserRole } from './RoleSelection';
+import { toast } from 'sonner';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -52,24 +53,50 @@ export const LoginForm: React.FC = () => {
     return 'your@email.com';
   };
 
-  // Test account login handlers
+  // Mock test account login handlers
   const loginAsTestAccount = (role: UserRole) => {
-    const testCredentials = {
-      donor: { email: 'testdonor@example.com', password: 'test123' },
-      politicalClient: { email: 'testorg', password: 'test123' },
-      admin: { email: 'testadmin@example.com', password: 'test123' }
-    };
-    
     setIsLoading(true);
     
-    const credentials = testCredentials[role];
-    login(credentials.email, credentials.password, role)
-      .then(() => {
-        navigate('/dashboard');
-      })
-      .catch(() => {
-        setIsLoading(false);
-      });
+    // Create mock user data based on role
+    const mockUserData = {
+      donor: {
+        id: 'test-donor-id',
+        name: 'Test Donor',
+        email: 'testdonor@example.com',
+        role: 'donor',
+        balance: 1000,
+        joinDate: new Date().toISOString()
+      },
+      politicalClient: {
+        id: 'test-org-id',
+        name: 'Test Organization',
+        loginUsername: 'testorg',
+        role: 'politicalClient',
+        email: 'testorg@example.com',
+        joinDate: new Date().toISOString()
+      },
+      admin: {
+        id: 'test-admin-id',
+        name: 'Test Admin',
+        email: 'testadmin@example.com',
+        role: 'admin',
+        joinDate: new Date().toISOString()
+      }
+    };
+    
+    const userData = mockUserData[role];
+    
+    // Store mock user in localStorage to simulate login
+    localStorage.setItem('user', JSON.stringify(userData));
+    
+    // Show success message
+    toast.success(`Logged in as ${role} successfully`);
+    
+    // Navigate to dashboard
+    setTimeout(() => {
+      setIsLoading(false);
+      navigate('/dashboard');
+    }, 500);
   };
 
   return (
