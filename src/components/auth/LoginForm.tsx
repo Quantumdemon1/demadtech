@@ -53,10 +53,10 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="animate-fade-in-up form-container shadow-lg">
-      <div className="text-center mb-10">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-3">Welcome Back</h1>
-        <p className="text-muted-foreground">
+    <div className="form-container shadow-lg bg-white dark:bg-gray-800 p-8 rounded-lg">
+      <div className="text-center mb-12">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-3">Welcome Back</h1>
+        <p className="text-muted-foreground text-lg">
           Enter your credentials to access your account
         </p>
       </div>
@@ -69,7 +69,7 @@ export const LoginForm: React.FC = () => {
             showAdmin={false} // Removing admin option as it will use real backend
           />
           
-          <div className="mt-10 text-center">
+          <div className="mt-12 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
               <Link to="/signup" className="text-campaign-orange hover:underline font-medium">
@@ -80,15 +80,15 @@ export const LoginForm: React.FC = () => {
         </>
       ) : (
         <>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <label htmlFor="email" className="text-sm font-medium">
+                <label htmlFor="email" className="text-base font-medium">
                   {getLoginLabel()}
                 </label>
                 <button
                   type="button"
-                  className="text-xs text-campaign-orange hover:underline"
+                  className="text-sm text-campaign-orange hover:underline"
                   onClick={() => setShowRoleSelection(true)}
                 >
                   Change account type
@@ -101,17 +101,17 @@ export const LoginForm: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="input-field"
+                className="input-field h-12 text-base"
                 autoComplete={selectedRole === 'politicalClient' ? 'username' : 'email'}
               />
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium">
+                <label htmlFor="password" className="text-base font-medium">
                   Password
                 </label>
-                <Link to="/forgot-password" className="text-xs text-campaign-orange hover:underline">
+                <Link to="/forgot-password" className="text-sm text-campaign-orange hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -123,7 +123,7 @@ export const LoginForm: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="input-field pr-10"
+                  className="input-field h-12 text-base pr-10"
                   autoComplete="current-password"
                 />
                 <button
@@ -132,21 +132,21 @@ export const LoginForm: React.FC = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
+                  {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
                 </button>
               </div>
             </div>
             
             <Button
               type="submit"
-              className="w-full btn-primary transition-all duration-200 mt-8"
+              className="w-full btn-primary transition-all duration-200 mt-8 h-12 text-lg font-medium"
               disabled={isLoading}
             >
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
           
-          <div className="mt-8 text-center">
+          <div className="mt-10 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
               <Link to="/signup" className="text-campaign-orange hover:underline font-medium">

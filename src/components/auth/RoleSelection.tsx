@@ -17,12 +17,12 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
   showAdmin = true, // Changed default to true to enable admin selection
 }) => {
   return (
-    <div className="space-y-8">
-      <h3 className="text-lg font-medium text-center">Select Account Type</h3>
+    <div className="space-y-10">
+      <h3 className="text-xl font-medium text-center mb-6">Select Account Type</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Button
           variant="outline"
-          className={`flex flex-col items-center justify-center p-8 h-auto w-full transition-all duration-200
+          className={`flex flex-col items-center justify-center p-10 h-auto w-full transition-all duration-200
           ${selectedRole === 'donor' 
             ? 'border-campaign-orange ring-2 ring-campaign-orange ring-offset-2 bg-campaign-orange/10' 
             : 'hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md'
@@ -31,15 +31,15 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           data-selected={selectedRole === 'donor'}
         >
           <div className="flex flex-col items-center">
-            <User className="h-10 w-10 mb-3" />
-            <span className="text-xl font-semibold mb-2">Donor</span>
-            <span className="text-sm text-muted-foreground text-center">Support campaigns with donations</span>
+            <User className="h-12 w-12 mb-4" />
+            <span className="text-xl font-semibold mb-3">Donor</span>
+            <span className="text-sm text-muted-foreground text-center leading-relaxed">Support campaigns with donations</span>
           </div>
         </Button>
         
         <Button
           variant="outline"
-          className={`flex flex-col items-center justify-center p-8 h-auto w-full transition-all duration-200
+          className={`flex flex-col items-center justify-center p-10 h-auto w-full transition-all duration-200
           ${selectedRole === 'politicalClient' 
             ? 'border-campaign-orange ring-2 ring-campaign-orange ring-offset-2 bg-campaign-orange/10' 
             : 'hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md'
@@ -48,16 +48,16 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
           data-selected={selectedRole === 'politicalClient'}
         >
           <div className="flex flex-col items-center">
-            <Building className="h-10 w-10 mb-3" />
-            <span className="text-xl font-semibold mb-2">Political Organization</span>
-            <span className="text-sm text-muted-foreground text-center">Create initiatives and manage donors</span>
+            <Building className="h-12 w-12 mb-4" />
+            <span className="text-xl font-semibold mb-3">Political Organization</span>
+            <span className="text-sm text-muted-foreground text-center leading-relaxed">Create initiatives and manage donors</span>
           </div>
         </Button>
         
         {showAdmin && (
           <Button
             variant="outline"
-            className={`flex flex-col items-center justify-center p-8 h-auto w-full md:col-span-2 transition-all duration-200
+            className={`flex flex-col items-center justify-center p-10 h-auto w-full md:col-span-2 transition-all duration-200
             ${selectedRole === 'admin' 
               ? 'border-campaign-orange ring-2 ring-campaign-orange ring-offset-2 bg-campaign-orange/10' 
               : 'hover:border-gray-400 dark:hover:border-gray-600 hover:shadow-md'
@@ -66,9 +66,9 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
             data-selected={selectedRole === 'admin'}
           >
             <div className="flex flex-col items-center">
-              <Shield className="h-10 w-10 mb-3" />
-              <span className="text-xl font-semibold mb-2">Administrator</span>
-              <span className="text-sm text-muted-foreground text-center">Manage platform and all accounts</span>
+              <Shield className="h-12 w-12 mb-4" />
+              <span className="text-xl font-semibold mb-3">Administrator</span>
+              <span className="text-sm text-muted-foreground text-center leading-relaxed">Manage platform and all accounts</span>
             </div>
           </Button>
         )}
