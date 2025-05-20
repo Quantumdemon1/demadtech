@@ -52,7 +52,7 @@ export const LoginForm: React.FC = () => {
     return 'your@email.com';
   };
 
-  // Mock test account login handlers with role-specific redirects
+  // Update the test account login handler to always redirect to /dashboard
   const loginAsTestAccount = (role: UserRole) => {
     setIsLoading(true);
     
@@ -91,18 +91,11 @@ export const LoginForm: React.FC = () => {
     // Show success message
     toast.success(`Logged in as ${role} successfully`);
     
-    // Navigate to role-specific dashboard immediately without setTimeout
-    // The setTimeout might be causing issues with navigation
+    // Set loading to false
     setIsLoading(false);
     
-    // Direct each role to their appropriate homepage
-    if (role === 'donor') {
-      navigate('/dashboard');
-    } else if (role === 'politicalClient') {
-      navigate('/political-client/dashboard');
-    } else if (role === 'admin') {
-      navigate('/admin/dashboard');
-    }
+    // Always navigate to /dashboard regardless of role
+    navigate('/dashboard');
   };
 
   return (

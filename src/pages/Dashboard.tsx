@@ -15,17 +15,12 @@ const Dashboard: React.FC = () => {
   // Redirect users based on their role - but only once on initial load
   useEffect(() => {
     if (user) {
-      const currentPath = window.location.pathname;
-      // Only redirect if we're actually on the dashboard path
-      // This prevents redirect loops
-      if (currentPath === '/dashboard') {
-        if (user.role === 'politicalClient') {
-          navigate('/political-client/dashboard');
-        } else if (user.role === 'admin') {
-          navigate('/admin/dashboard');
-        }
-        // Donors stay on this page
+      if (user.role === 'politicalClient') {
+        navigate('/political-client/dashboard');
+      } else if (user.role === 'admin') {
+        navigate('/admin/dashboard');
       }
+      // Donors stay on this page
     }
   }, [user, navigate]);
 
