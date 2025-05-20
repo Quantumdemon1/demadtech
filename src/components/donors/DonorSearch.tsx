@@ -67,12 +67,14 @@ const DonorSearch: React.FC<DonorSearchProps> = ({
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0">
         <Command>
-          <CommandInput 
-            placeholder="Search donors..." 
-            value={searchQuery}
-            onValueChange={setSearchQuery}
-            icon={Search}
-          />
+          <div className="flex items-center px-2 border-b">
+            <Search className="h-4 w-4 shrink-0 opacity-50 mr-2" />
+            <CommandInput 
+              placeholder="Search donors..." 
+              value={searchQuery}
+              onValueChange={setSearchQuery}
+            />
+          </div>
           <CommandList>
             {isLoading && (
               <div className="flex items-center justify-center py-6">
