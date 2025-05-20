@@ -184,7 +184,7 @@ const ClientGrantAwardPage: React.FC = () => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">None (General Award)</SelectItem>
+                          <SelectItem value="none">None (General Award)</SelectItem>
                           {initiatives?.map((initiative: Initiative) => (
                             <SelectItem key={initiative.id} value={initiative.id}>
                               {initiative.initiativeName}
@@ -219,7 +219,7 @@ const ClientGrantAwardPage: React.FC = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {/* We would add campaign options here when we have the API */}
                             <SelectItem value="placeholder-campaign">Sample Campaign (placeholder)</SelectItem>
                           </SelectContent>
