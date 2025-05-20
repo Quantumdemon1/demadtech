@@ -54,16 +54,7 @@ export const updateAdCampaignStatusAdminAPI = (
     });
 };
 
-/**
- * Get all awards in the system
- * This endpoint is public but requires the service-level accessToken cookie
- * @returns Promise with list of all awards
- */
-export const getAllAwardsSystemAPI = () => {
-    return request('/awards', {
-        method: 'GET',
-    });
-};
+// Removed duplicate getAllAwardsSystemAPI from this file since it's now in award.ts
 
 /**
  * Create or update an award

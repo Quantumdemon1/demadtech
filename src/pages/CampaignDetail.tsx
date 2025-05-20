@@ -12,8 +12,9 @@ import AdCreativesPanel from '@/components/campaigns/AdCreativesPanel';
 import LoadingState from '@/components/campaigns/LoadingState';
 import NotFoundState from '@/components/campaigns/NotFoundState';
 import { toast } from 'sonner';
-import { getAdCampaignByIdAPI, getAllInitiativesAPI } from '@/services/api';
+import { getAllInitiativesAPI } from '@/services/api';
 import { mapBackendAdCampaignToCampaign, mapBackendInitiativeToInitiative } from '@/services/dataMapping';
+import { getAdCampaignByIdAPI } from '@/services/api/campaign';
 
 const CampaignDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
