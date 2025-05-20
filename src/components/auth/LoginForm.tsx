@@ -91,18 +91,9 @@ export const LoginForm: React.FC = () => {
     // Show success message
     toast.success(`Logged in as ${role} successfully`);
     
-    // Navigate to role-specific dashboard immediately without setTimeout
-    // The setTimeout might be causing issues with navigation
+    // Set loading to false and navigate to the splash page
     setIsLoading(false);
-    
-    // Direct each role to their appropriate homepage
-    if (role === 'donor') {
-      navigate('/dashboard');
-    } else if (role === 'politicalClient') {
-      navigate('/political-client/dashboard');
-    } else if (role === 'admin') {
-      navigate('/admin/dashboard');
-    }
+    navigate('/splash');
   };
 
   return (
