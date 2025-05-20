@@ -91,7 +91,8 @@ const CampaignDetail: React.FC = () => {
         <CampaignDetailsPanel campaign={campaign} />
         <CampaignMetrics
           metrics={campaign.metrics || { impressions: 0, clicks: 0, shares: 0 }}
-          showViewAllLink={true}
+          showViewAllLink={false}
+          title="Campaign Performance"
         />
         <CampaignContentPanel campaign={campaign} />
         <AdCreativesPanel 
