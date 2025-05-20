@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
@@ -51,6 +52,26 @@ export const LoginForm: React.FC = () => {
     return 'your@email.com';
   };
 
+  // Test account login handlers
+  const loginAsTestAccount = (role: UserRole) => {
+    const testCredentials = {
+      donor: { email: 'testdonor@example.com', password: 'test123' },
+      politicalClient: { email: 'testorg', password: 'test123' },
+      admin: { email: 'testadmin@example.com', password: 'test123' }
+    };
+    
+    setIsLoading(true);
+    
+    const credentials = testCredentials[role];
+    login(credentials.email, credentials.password, role)
+      .then(() => {
+        navigate('/dashboard');
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
+  };
+
   return (
     <div className="form-container shadow-lg bg-white dark:bg-gray-800 p-8 rounded-lg w-full max-w-2xl mx-auto">
       <div className="text-center mb-12">
@@ -67,6 +88,40 @@ export const LoginForm: React.FC = () => {
             onRoleSelect={handleRoleSelect}
             showAdmin={false} // Removing admin option as it will use real backend
           />
+          
+          {/* Test Account Section */}
+          <div className="mt-12 border-t pt-8">
+            <h3 className="text-lg font-medium text-center mb-6">Test Accounts</h3>
+            <p className="text-sm text-muted-foreground text-center mb-6">
+              Try out the platform with these test accounts
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button
+                variant="outline"
+                className="p-4"
+                onClick={() => loginAsTestAccount('donor')}
+                disabled={isLoading}
+              >
+                Try as Donor
+              </Button>
+              <Button
+                variant="outline"
+                className="p-4"
+                onClick={() => loginAsTestAccount('politicalClient')}
+                disabled={isLoading}
+              >
+                Try as Organization
+              </Button>
+              <Button
+                variant="outline"
+                className="p-4"
+                onClick={() => loginAsTestAccount('admin')}
+                disabled={isLoading}
+              >
+                Try as Admin
+              </Button>
+            </div>
+          </div>
           
           <div className="mt-12 text-center">
             <p className="text-sm text-muted-foreground">
