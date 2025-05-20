@@ -53,7 +53,7 @@ export const LoginForm: React.FC = () => {
     return 'your@email.com';
   };
 
-  // Mock test account login handlers
+  // Mock test account login handlers with role-specific redirects
   const loginAsTestAccount = (role: UserRole) => {
     setIsLoading(true);
     
@@ -92,10 +92,18 @@ export const LoginForm: React.FC = () => {
     // Show success message
     toast.success(`Logged in as ${role} successfully`);
     
-    // Navigate to dashboard
+    // Navigate to role-specific dashboard
     setTimeout(() => {
       setIsLoading(false);
-      navigate('/dashboard');
+      
+      // Direct each role to their appropriate homepage
+      if (role === 'donor') {
+        navigate('/dashboard');
+      } else if (role === 'politicalClient') {
+        navigate('/political-client/dashboard');
+      } else if (role === 'admin') {
+        navigate('/admin/dashboard');
+      }
     }, 500);
   };
 

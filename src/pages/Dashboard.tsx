@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import CampaignDashboard from '@/components/campaigns/CampaignDashboard';
 import useAuth from '@/hooks/useAuth';
@@ -10,6 +10,19 @@ import InitiativesTab from '@/components/initiatives/InitiativesTab';
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('campaigns');
+  const navigate = useNavigate();
+
+  // Redirect users based on their role
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'politicalClient') {
+        navigate('/political-client/dashboard');
+      } else if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      }
+      // Donors stay on this page
+    }
+  }, [user, navigate]);
 
   if (!user) {
     return <Navigate to="/login" />;
