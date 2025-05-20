@@ -109,19 +109,19 @@ export function mapBackendInitiativeToInitiative(initiativeData: any): Initiativ
 
 /**
  * Maps backend ad campaign response to frontend Campaign object
- * Fills missing data with placeholders
+ * Enhanced to handle richer campaign data from backend
  */
 export function mapBackendAdCampaignToCampaign(adCampaignData: any, initiative?: any, userId?: string): Campaign {
   // Create a contest object from initiative data if available
   const contestDetails: Contest = {
     id: adCampaignData.initiativeGuid,
-    state: initiative?.targets?.location?.[0] || 'N/A',
-    district: initiative?.targets?.location?.[1] || 'N/A',
-    democratFirstName: 'Candidate', // Placeholder
-    democratLastName: 'Name', // Placeholder
-    republicanFirstName: 'Opponent', // Placeholder
-    republicanLastName: 'Name', // Placeholder
-    electionDate: new Date().toISOString().split('T')[0], // Today as placeholder
+    state: initiative?.targets?.location?.[0] || adCampaignData.initiativeDetails?.targets?.location?.[0] || 'N/A',
+    district: initiative?.targets?.location?.[1] || adCampaignData.initiativeDetails?.targets?.location?.[1] || 'N/A',
+    democratFirstName: adCampaignData.initiativeDetails?.democratFirstName || 'Candidate', 
+    democratLastName: adCampaignData.initiativeDetails?.democratLastName || 'Name',
+    republicanFirstName: adCampaignData.initiativeDetails?.republicanFirstName || 'Opponent',
+    republicanLastName: adCampaignData.initiativeDetails?.republicanLastName || 'Name',
+    electionDate: adCampaignData.initiativeDetails?.electionDate || new Date().toISOString().split('T')[0],
   };
   
   // Get description from seedAnswers if available or use description field
@@ -133,24 +133,29 @@ export function mapBackendAdCampaignToCampaign(adCampaignData: any, initiative?:
     ).join('\n\n');
   }
   
+  // Use the directly provided metrics or default to zeros
+  const metrics = adCampaignData.metrics || {
+    impressions: 0,
+    clicks: 0,
+    shares: 0,
+  };
+  
   return {
     id: adCampaignData.adCampaignGuid,
     name: adCampaignData.name,
-    userId: userId || '',
+    userId: userId || adCampaignData.donorGuid || '',
     contestId: adCampaignData.initiativeGuid,
     contest: contestDetails,
-    contentType: 'formal', // Default placeholder
+    contentType: adCampaignData.contentType || 'formal', // Use provided contentType or default
     contentText,
-    startDate: new Date().toISOString().split('T')[0], // Today as placeholder
-    endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0], // Month from now as placeholder
-    adSpend: 500, // Default placeholder
+    contentImage: adCampaignData.contentImageS3Url || adCampaignData.contentImage || '',
+    startDate: adCampaignData.startDate || new Date().toISOString().split('T')[0],
+    endDate: adCampaignData.endDate || new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
+    adSpend: adCampaignData.adSpend || 500,
+    donation: adCampaignData.donation,
     status: (adCampaignData.status as Campaign['status']) || 'pending',
-    metrics: {
-      impressions: 0,
-      clicks: 0,
-      shares: 0,
-    },
-    createdAt: new Date().toISOString(),
+    metrics: metrics,
+    createdAt: adCampaignData.createdAt || new Date().toISOString(),
   };
 }
 

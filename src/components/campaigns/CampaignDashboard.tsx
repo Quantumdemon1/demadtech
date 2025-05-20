@@ -52,7 +52,7 @@ const CampaignDashboard: React.FC = () => {
           : [];
         setCampaigns(mappedCampaigns);
 
-        // Calculate total metrics (all zero for now as backend doesn't provide metrics)
+        // Calculate total metrics from the mapped campaigns
         const metrics = mappedCampaigns.reduce(
           (acc, campaign) => {
             if (campaign.metrics) {

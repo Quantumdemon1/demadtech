@@ -12,7 +12,7 @@ import AdCreativesPanel from '@/components/campaigns/AdCreativesPanel';
 import LoadingState from '@/components/campaigns/LoadingState';
 import NotFoundState from '@/components/campaigns/NotFoundState';
 import { toast } from 'sonner';
-import { getDonorAdCampaignsAPI, getAllInitiativesAPI } from '@/services/api';
+import { getAdCampaignByIdAPI, getAllInitiativesAPI } from '@/services/api';
 import { mapBackendAdCampaignToCampaign, mapBackendInitiativeToInitiative } from '@/services/dataMapping';
 
 const CampaignDetail: React.FC = () => {
@@ -31,9 +31,9 @@ const CampaignDetail: React.FC = () => {
     const fetchCampaignData = async () => {
       setLoading(true);
       try {
-        // Fetch both campaigns and initiatives in parallel
-        const [campaignsResponse, initiativesResponse] = await Promise.all([
-          getDonorAdCampaignsAPI(user.email),
+        // Fetch both specific campaign and all initiatives in parallel
+        const [campaignResponse, initiativesResponse] = await Promise.all([
+          getAdCampaignByIdAPI(user.email, id),
           getAllInitiativesAPI(user.email)
         ]);
 
@@ -43,17 +43,13 @@ const CampaignDetail: React.FC = () => {
           : [];
         setInitiatives(mappedInitiatives);
 
-        // Find the specific campaign by id
-        const backendCampaign = Array.isArray(campaignsResponse)
-          ? campaignsResponse.find(c => c.adCampaignGuid === id)
-          : null;
-
-        if (backendCampaign) {
+        // Process the single campaign response
+        if (campaignResponse) {
           // Find related initiative if available
-          const initiative = mappedInitiatives.find(i => i.id === backendCampaign.initiativeGuid);
+          const initiative = mappedInitiatives.find(i => i.id === campaignResponse.initiativeGuid);
           
           // Map to frontend campaign format
-          const mappedCampaign = mapBackendAdCampaignToCampaign(backendCampaign, initiative, user.id);
+          const mappedCampaign = mapBackendAdCampaignToCampaign(campaignResponse, initiative, user.id);
           setCampaign(mappedCampaign);
         } else {
           setCampaign(null);
