@@ -11,3 +11,17 @@ export const getAllAwardsSystemAPI = () => {
         method: 'GET',
     });
 };
+
+/**
+ * Get all available awards for a specific user
+ * @param loginUsername - The username of the authenticated user
+ * @returns Promise with all awards data
+ */
+export const getAllAwardsAPI = (loginUsername: string) => {
+    if (!loginUsername) {
+        return Promise.reject(new Error("loginUsername is required to fetch awards."));
+    }
+    return request(`/awards?loginUsername=${encodeURIComponent(loginUsername)}`, {
+        method: 'GET',
+    });
+};

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -51,7 +50,7 @@ const ClientGrantAwardPage: React.FC = () => {
     enabled: !!loginUsername
   });
 
-  // Fetch awards
+  // Fetch awards - using the correct API function with username
   const { data: awards, isLoading: isLoadingAwards } = useQuery({
     queryKey: ['awards', loginUsername],
     queryFn: () => getAllAwardsAPI(loginUsername),
