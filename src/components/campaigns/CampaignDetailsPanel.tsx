@@ -20,14 +20,14 @@ const CampaignDetailsPanel: React.FC<CampaignDetailsPanelProps> = ({ campaign })
     }
   };
 
-  // Map status to badge variant
+  // Map status to badge variant - fixed to only use supported variants
   const getStatusVariant = (status: Campaign['status']) => {
     switch(status) {
       case 'draft': return 'secondary';
-      case 'pending': return 'warning';
+      case 'pending': return 'outline'; // Changed from 'warning' to 'outline'
       case 'approved': return 'default';
       case 'rejected': return 'destructive';
-      case 'active': return 'success';
+      case 'active': return 'default'; // Changed from 'success' to 'default'
       case 'completed': return 'outline';
       default: return 'outline';
     }
