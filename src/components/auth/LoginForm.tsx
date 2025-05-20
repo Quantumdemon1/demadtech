@@ -54,9 +54,9 @@ export const LoginForm: React.FC = () => {
 
   return (
     <div className="animate-fade-in-up form-container shadow-lg">
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome Back</h1>
-        <p className="text-muted-foreground mt-2">
+      <div className="text-center mb-10">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground mb-3">Welcome Back</h1>
+        <p className="text-muted-foreground">
           Enter your credentials to access your account
         </p>
       </div>
@@ -69,7 +69,7 @@ export const LoginForm: React.FC = () => {
             showAdmin={false} // Removing admin option as it will use real backend
           />
           
-          <div className="mt-8 text-center">
+          <div className="mt-10 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
               <Link to="/signup" className="text-campaign-orange hover:underline font-medium">
@@ -80,8 +80,8 @@ export const LoginForm: React.FC = () => {
         </>
       ) : (
         <>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label htmlFor="email" className="text-sm font-medium">
                   {getLoginLabel()}
@@ -106,7 +106,7 @@ export const LoginForm: React.FC = () => {
               />
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label htmlFor="password" className="text-sm font-medium">
                   Password
@@ -139,15 +139,15 @@ export const LoginForm: React.FC = () => {
             
             <Button
               type="submit"
-              className="w-full btn-primary transition-all duration-200 mt-6"
+              className="w-full btn-primary transition-all duration-200 mt-8"
               disabled={isLoading}
             >
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
           
-          <div className="mt-6 text-center text-sm">
-            <p>
+          <div className="mt-8 text-center">
+            <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
               <Link to="/signup" className="text-campaign-orange hover:underline font-medium">
                 Create an account

@@ -8,7 +8,7 @@ const Login: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="flex-1 flex items-center justify-center bg-gradient-to-b from-background to-background/80 p-4 md:p-8">
+      <main className="flex-1 flex items-center justify-center bg-gradient-to-b from-background to-background/80 py-8 px-4 md:px-8">
         <div className="w-full max-w-md">
           <LoginForm />
         </div>
