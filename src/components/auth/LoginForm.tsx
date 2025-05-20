@@ -69,10 +69,10 @@ export const LoginForm: React.FC = () => {
             showAdmin={false} // Removing admin option as it will use real backend
           />
           
-          <div className="mt-4 text-center">
+          <div className="mt-8 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
-              <Link to="/signup" className="text-campaign-orange hover:underline">
+              <Link to="/signup" className="text-campaign-orange hover:underline font-medium">
                 Create an account
               </Link>
             </p>
@@ -146,7 +146,7 @@ export const LoginForm: React.FC = () => {
           <div className="mt-6 text-center text-sm">
             <p>
               Don't have an account?{' '}
-              <Link to="/signup" className="text-campaign-orange hover:underline">
+              <Link to="/signup" className="text-campaign-orange hover:underline font-medium">
                 Create an account
               </Link>
             </p>
