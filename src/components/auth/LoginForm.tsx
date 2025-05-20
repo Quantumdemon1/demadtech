@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
@@ -92,19 +91,18 @@ export const LoginForm: React.FC = () => {
     // Show success message
     toast.success(`Logged in as ${role} successfully`);
     
-    // Navigate to role-specific dashboard
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // Direct each role to their appropriate homepage
-      if (role === 'donor') {
-        navigate('/dashboard');
-      } else if (role === 'politicalClient') {
-        navigate('/political-client/dashboard');
-      } else if (role === 'admin') {
-        navigate('/admin/dashboard');
-      }
-    }, 500);
+    // Navigate to role-specific dashboard immediately without setTimeout
+    // The setTimeout might be causing issues with navigation
+    setIsLoading(false);
+    
+    // Direct each role to their appropriate homepage
+    if (role === 'donor') {
+      navigate('/dashboard');
+    } else if (role === 'politicalClient') {
+      navigate('/political-client/dashboard');
+    } else if (role === 'admin') {
+      navigate('/admin/dashboard');
+    }
   };
 
   return (
