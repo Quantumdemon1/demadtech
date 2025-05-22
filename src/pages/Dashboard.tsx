@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import CampaignDashboard from '@/components/campaigns/CampaignDashboard';
@@ -13,7 +13,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
   // Redirect users based on their role - but only once on initial load
-  useEffect(() => {
+  React.useEffect(() => {
     if (user) {
       if (user.role === 'politicalClient') {
         navigate('/political-client/dashboard');
