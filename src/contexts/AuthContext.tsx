@@ -19,6 +19,16 @@ import {
 } from '@/services/dataMapping';
 import { removeCookie } from '@/utils/cookieUtils';
 import { API_BASE_URL } from '@/services/api/base';
+import { 
+  testUsers, 
+  testCredentials, 
+  testCampaigns 
+} from '@/utils/testAccountsData';
+import { 
+  initializeTestAccountSystem, 
+  getTestDataForRole,
+  simulateAPIDelay
+} from '@/utils/authUtils';
 
 // Create AuthContext
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Initialize test account system
+    initializeTestAccountSystem();
+    
     // Check if user is already logged in
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -41,11 +54,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, []);
 
-  // Login handler
+  // Login handler with test account support
   const login = async (emailOrUsername: string, password: string, role?: 'donor' | 'politicalClient' | 'admin'): Promise<User> => {
     setLoading(true);
     try {
-      // Determine the login endpoint based on role
+      // Check if using test credentials
+      const isDonorTest = emailOrUsername === testCredentials.donor.username && password === testCredentials.donor.password;
+      const isPoliticalTest = emailOrUsername === testCredentials.politicalClient.username && password === testCredentials.politicalClient.password;
+      const isAdminTest = emailOrUsername === testCredentials.admin.username && password === testCredentials.admin.password;
+      
+      // If using test credentials, return the appropriate test user
+      if (isDonorTest || isPoliticalTest || isAdminTest) {
+        // Add a small delay for realism
+        await simulateAPIDelay(600, 1200);
+        
+        let testUser;
+        if (isDonorTest) {
+          testUser = testUsers.find(u => u.role === 'donor');
+        } else if (isPoliticalTest) {
+          testUser = testUsers.find(u => u.role === 'politicalClient');
+        } else {
+          testUser = testUsers.find(u => u.role === 'admin');
+        }
+        
+        if (testUser) {
+          // Store user in localStorage and state
+          localStorage.setItem('user', JSON.stringify(testUser));
+          setUser(testUser);
+          
+          // Show success toast with appropriate message
+          toast.success(`Logged in as ${testUser.firstName || testUser.politicalClientName || 'Admin'} (Test Account)`);
+          
+          return testUser;
+        }
+      }
+      
+      // Real API login for non-test accounts
       const endpoint = role ? `/login/${role}` : '/login/donor';
       
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -102,17 +146,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (userData: Partial<User>, password: string): Promise<User> => {
     setLoading(true);
     try {
+      // Simulate API delay
+      await simulateAPIDelay(800, 1500);
+      
       // Create request body for donor creation
       const donorData = mapUserToDonorRequest({
         ...userData,
         password // Add password to be mapped by the utility
       });
       
-      // Call API to create donor
-      const response = await createDonorAPI(donorData);
+      // For demo purposes, store in localStorage instead of calling real API
+      const newUser = {
+        id: `donor-${Date.now()}`,
+        email: userData.email,
+        loginUsername: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        role: 'donor',
+        phone: userData.phone,
+        occupation: userData.occupation,
+        address: userData.address,
+        city: userData.city,
+        state: userData.state,
+        zip: userData.zip,
+        accountBalance: '0.00',
+        createdAt: new Date().toISOString(),
+        profileImageUrl: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150&h=150&fit=crop&crop=face'
+      };
       
-      // If successful, login with the new credentials to get full user details
-      return await login(userData.email || donorData.loginUsername, password, 'donor');
+      // Store in registered users
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      registeredUsers.push(newUser);
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      
+      // Store in current user
+      localStorage.setItem('user', JSON.stringify(newUser));
+      setUser(newUser as User);
+      
+      toast.success('Account created successfully');
+      return newUser as User;
     } catch (error) {
       console.error('Signup error:', error);
       
@@ -140,17 +212,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const politicalClientSignup = async (userData: Partial<User>, password: string): Promise<User> => {
     setLoading(true);
     try {
-      // Create request body for political client creation
-      const clientData = mapUserToPoliticalClientRequest({
-        ...userData,
-        password // Add password to be mapped by the utility
-      });
+      // Simulate API delay
+      await simulateAPIDelay(800, 1500);
       
-      // Call API to create political client
-      const response = await createPoliticalClientAPI(clientData);
+      // Create new political client user
+      const newUser = {
+        id: `political-${Date.now()}`,
+        loginUsername: userData.loginUsername || `org-${Date.now()}`,
+        politicalClientName: userData.politicalClientName || 'New Organization',
+        role: 'politicalClient',
+        email: userData.email,
+        createdAt: new Date().toISOString(),
+        profileImageUrl: 'https://images.unsplash.com/photo-1560472355-536de3962603?w=150&h=150&fit=crop'
+      };
       
-      // If successful, login with the new credentials
-      return await login(userData.loginUsername || clientData.loginUsername, password, 'politicalClient');
+      // Store in registered users
+      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+      registeredUsers.push(newUser);
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      
+      // Store in current user
+      localStorage.setItem('user', JSON.stringify(newUser));
+      setUser(newUser as User);
+      
+      toast.success('Organization account created successfully');
+      return newUser as User;
     } catch (error) {
       console.error('Political client signup error:', error);
       

@@ -1,82 +1,136 @@
-
 import { User } from "@/types";
 import { toast } from "sonner";
+import { 
+  testUsers, 
+  testCredentials, 
+  testCampaigns, 
+  testInitiatives, 
+  testPendingCampaigns, 
+  testPoliticalClientInitiatives 
+} from "./testAccountsData";
 
-// Demo account data
-export const demoAccounts = [
-  {
-    id: 'demo-user-123',
-    email: 'demo@adtech.com',
-    password: 'demo123',
-    firstName: 'Demo',
-    lastName: 'User',
-    role: 'donor',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'demo-admin-456',
-    email: 'admin@adtech.com',
-    password: 'admin123',
-    firstName: 'Demo',
-    lastName: 'Admin',
-    role: 'admin',
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: 'demo-political-789',
-    loginUsername: 'political',
-    password: 'client123',
-    politicalClientName: 'Demo Political Organization',
-    role: 'politicalClient',
-    createdAt: new Date().toISOString()
-  }
-];
-
-// Initialize demo accounts in localStorage
-export const initializeDemoAccounts = (): void => {
-  const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+// Initialize comprehensive test data in localStorage
+export const initializeTestAccountSystem = (): void => {
+  // Store test users
+  const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
   
-  // Only add demo accounts if they don't already exist
+  // Only add test users if they don't already exist
   let updated = false;
   
-  demoAccounts.forEach(demoAccount => {
-    const identifier = demoAccount.email || demoAccount.loginUsername;
-    if (!registeredUsers.some((u: Partial<User>) => 
+  testUsers.forEach(testUser => {
+    const identifier = testUser.email || testUser.loginUsername;
+    if (!existingUsers.some((u: Partial<User>) => 
       (u.email === identifier || u.loginUsername === identifier)
     )) {
-      registeredUsers.push(demoAccount);
+      existingUsers.push(testUser);
       updated = true;
-      console.log(`Demo account created: ${identifier}`);
+      console.log(`Test account created: ${identifier} (${testUser.role})`);
     }
   });
   
   if (updated) {
-    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+    localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
+  }
+  
+  // Store test campaigns (for donor account)
+  localStorage.setItem('testCampaigns', JSON.stringify(testCampaigns));
+  
+  // Store test initiatives
+  localStorage.setItem('testInitiatives', JSON.stringify(testInitiatives));
+  
+  // Store pending campaigns (for admin account)
+  localStorage.setItem('testPendingCampaigns', JSON.stringify(testPendingCampaigns));
+  
+  // Store political client initiatives
+  localStorage.setItem('testPoliticalClientInitiatives', JSON.stringify(testPoliticalClientInitiatives));
+  
+  console.log('Test account system initialized with realistic data');
+};
+
+// Get test data for the current user role
+export const getTestDataForRole = (role: string, userId?: string) => {
+  switch (role) {
+    case 'donor':
+      return {
+        campaigns: testCampaigns.filter(c => c.userId === userId),
+        initiatives: testInitiatives,
+        availableInitiatives: testInitiatives.filter(i => i.status === 'active')
+      };
+    
+    case 'politicalClient':
+      return {
+        initiatives: testPoliticalClientInitiatives,
+        createdInitiatives: testPoliticalClientInitiatives
+      };
+    
+    case 'admin':
+      return {
+        pendingCampaigns: testPendingCampaigns,
+        allCampaigns: [...testCampaigns, ...testPendingCampaigns],
+        allInitiatives: [...testInitiatives, ...testPoliticalClientInitiatives],
+        allUsers: testUsers
+      };
+    
+    default:
+      return {};
   }
 };
 
-// Get stored user from localStorage
+// Simulate API response delays for realism
+export const simulateAPIDelay = (minMs: number = 300, maxMs: number = 800): Promise<void> => {
+  const delay = Math.random() * (maxMs - minMs) + minMs;
+  return new Promise(resolve => setTimeout(resolve, delay));
+};
+
+// Test account credentials helper
+export const getTestCredentials = () => testCredentials;
+
+// Display test account information
+export const showTestAccountInfo = (): void => {
+  const info = `
+🧪 TEST ACCOUNTS AVAILABLE:
+
+👤 DONOR ACCOUNT:
+   Email: ${testCredentials.donor.username}
+   Password: ${testCredentials.donor.password}
+   Features: Create campaigns, view initiatives, metrics
+
+🏛️ POLITICAL CLIENT:
+   Username: ${testCredentials.politicalClient.username}  
+   Password: ${testCredentials.politicalClient.password}
+   Features: Create initiatives, manage campaigns
+
+⚙️ ADMIN ACCOUNT:
+   Email: ${testCredentials.admin.username}
+   Password: ${testCredentials.admin.password}
+   Features: Approve campaigns, manage users
+  `;
+  
+  console.log(info);
+  toast.info("Check console for test account credentials", {
+    duration: 3000,
+    description: "Three different account types available for testing"
+  });
+};
+
+// Legacy functions (keep for compatibility)
 export const getStoredUser = (): User | null => {
   const storedUser = localStorage.getItem('user');
   return storedUser ? JSON.parse(storedUser) : null;
 };
 
-// Store user in localStorage
 export const storeUser = (user: User): void => {
   localStorage.setItem('user', JSON.stringify(user));
 };
 
-// Remove user from localStorage
 export const removeStoredUser = (): void => {
   localStorage.removeItem('user');
 };
 
-// Get registered users from localStorage
 export const getRegisteredUsers = (): any[] => {
   return JSON.parse(localStorage.getItem('registeredUsers') || '[]');
 };
 
-// Update registered users in localStorage
 export const updateRegisteredUsers = (users: any[]): void => {
   localStorage.setItem('registeredUsers', JSON.stringify(users));
 };
