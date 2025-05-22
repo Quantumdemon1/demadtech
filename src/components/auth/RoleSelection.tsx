@@ -14,13 +14,14 @@ interface RoleSelectionProps {
 const RoleSelection: React.FC<RoleSelectionProps> = ({
   selectedRole,
   onRoleSelect,
-  showAdmin = true, // Changed default to true to enable admin selection
+  showAdmin = true,
 }) => {
   return (
     <div className="space-y-10">
       <h3 className="text-xl font-medium text-center mb-6">Select Account Type</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Button
+          type="button"
           variant="outline"
           className={`flex flex-col items-center justify-center p-10 h-auto w-full min-h-[200px] transition-all duration-200
           ${selectedRole === 'donor' 
@@ -38,6 +39,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
         </Button>
         
         <Button
+          type="button"
           variant="outline"
           className={`flex flex-col items-center justify-center p-10 h-auto w-full min-h-[200px] transition-all duration-200
           ${selectedRole === 'politicalClient' 
@@ -56,6 +58,7 @@ const RoleSelection: React.FC<RoleSelectionProps> = ({
         
         {showAdmin && (
           <Button
+            type="button"
             variant="outline"
             className={`flex flex-col items-center justify-center p-10 h-auto w-full md:col-span-2 min-h-[200px] transition-all duration-200
             ${selectedRole === 'admin' 

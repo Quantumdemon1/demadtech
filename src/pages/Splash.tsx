@@ -7,7 +7,7 @@ import ThreeBackground from '@/components/ThreeBackground';
 
 const Splash: React.FC = () => {
   return (
-    <div className="flex min-h-screen flex-col bg-white relative overflow-hidden">
+    <div className="flex min-h-screen flex-col bg-background relative overflow-hidden">
       {/* Three.js Background */}
       <ThreeBackground />
       

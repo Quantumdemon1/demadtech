@@ -31,7 +31,7 @@ const ThreeBackground: React.FC = () => {
 
     // Create geometric objects (particles) for the background
     const particles: THREE.Mesh[] = [];
-    const particleCount = 100;
+    const particleCount = 30; // Reduced particle count for better performance
     for (let i = 0; i < particleCount; i++) {
       const geometry = new THREE.SphereGeometry(0.05 + Math.random() * 0.1, 8, 8);
       const material = new THREE.MeshPhongMaterial({
@@ -72,11 +72,11 @@ const ThreeBackground: React.FC = () => {
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
-      // Animate particles
+      // Animate particles with lower speed for better performance
       particles.forEach((particle) => {
-        particle.rotation.x += 0.002;
-        particle.rotation.y += 0.002;
-        particle.position.z += 0.01;
+        particle.rotation.x += 0.001;
+        particle.rotation.y += 0.001;
+        particle.position.z += 0.005;
 
         // Reset particle if it gets too close to the camera
         if (particle.position.z > 5) {
@@ -88,33 +88,34 @@ const ThreeBackground: React.FC = () => {
 
       renderer.render(scene, camera);
     };
+    
+    // Start animation
     animate();
 
-    // Cleanup on unmount
+    // Cleanup function
     return () => {
       window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationId);
       
-      // Dispose all geometries and materials
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          if (object.geometry) object.geometry.dispose();
-          if (object.material) {
-            if (Array.isArray(object.material)) {
-              object.material.forEach(material => material.dispose());
-            } else {
-              object.material.dispose();
-            }
-          }
-        }
-      });
-      
-      // Clear scene
-      while(scene.children.length > 0) {
-        scene.remove(scene.children[0]);
+      if (animationId) {
+        cancelAnimationFrame(animationId);
       }
       
+      // Dispose geometries and materials
+      particles.forEach(particle => {
+        if (particle.geometry) particle.geometry.dispose();
+        if (particle.material) {
+          if (Array.isArray(particle.material)) {
+            particle.material.forEach(material => material.dispose());
+          } else {
+            particle.material.dispose();
+          }
+        }
+        scene.remove(particle);
+      });
+      
       renderer.dispose();
+      
+      // Remove canvas from DOM
       if (mountRef.current && mountRef.current.contains(renderer.domElement)) {
         mountRef.current.removeChild(renderer.domElement);
       }
