@@ -11,13 +11,11 @@ interface AddressFieldsProps {
     [key: string]: string;
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  formErrors?: {[key: string]: string};
 }
 
 const AddressFields: React.FC<AddressFieldsProps> = ({
   formData,
   handleChange,
-  formErrors = {},
 }) => {
   return (
     <>
@@ -31,14 +29,11 @@ const AddressFields: React.FC<AddressFieldsProps> = ({
           placeholder="123 Main St"
           value={formData.address}
           onChange={handleChange}
-          className={`input-field ${formErrors.address ? 'border-red-500' : ''}`}
+          className="input-field"
         />
-        {formErrors.address && (
-          <p className="text-red-500 text-sm mt-1">{formErrors.address}</p>
-        )}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div className="space-y-2">
           <label htmlFor="city" className="text-sm font-medium">
             City
@@ -46,14 +41,11 @@ const AddressFields: React.FC<AddressFieldsProps> = ({
           <Input
             id="city"
             name="city"
-            placeholder="Anytown"
+            placeholder="New York"
             value={formData.city}
             onChange={handleChange}
-            className={`input-field ${formErrors.city ? 'border-red-500' : ''}`}
+            className="input-field"
           />
-          {formErrors.city && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
-          )}
         </div>
         
         <div className="space-y-2">
@@ -63,32 +55,26 @@ const AddressFields: React.FC<AddressFieldsProps> = ({
           <Input
             id="state"
             name="state"
-            placeholder="CA"
+            placeholder="NY"
             value={formData.state}
             onChange={handleChange}
-            className={`input-field ${formErrors.state ? 'border-red-500' : ''}`}
+            className="input-field"
           />
-          {formErrors.state && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.state}</p>
-          )}
         </div>
-      </div>
-      
-      <div className="space-y-2">
-        <label htmlFor="zip" className="text-sm font-medium">
-          ZIP Code
-        </label>
-        <Input
-          id="zip"
-          name="zip"
-          placeholder="12345"
-          value={formData.zip}
-          onChange={handleChange}
-          className={`input-field ${formErrors.zip ? 'border-red-500' : ''}`}
-        />
-        {formErrors.zip && (
-          <p className="text-red-500 text-sm mt-1">{formErrors.zip}</p>
-        )}
+        
+        <div className="space-y-2 col-span-2 md:col-span-1">
+          <label htmlFor="zip" className="text-sm font-medium">
+            Zip
+          </label>
+          <Input
+            id="zip"
+            name="zip"
+            placeholder="10001"
+            value={formData.zip}
+            onChange={handleChange}
+            className="input-field"
+          />
+        </div>
       </div>
     </>
   );

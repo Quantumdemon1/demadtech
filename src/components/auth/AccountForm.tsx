@@ -12,14 +12,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 export const AccountForm: React.FC = () => {
   const { user, updateUserProfile } = useAuth();
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    phone: user?.phone || '',
+    address: user?.address || '',
+    city: user?.city || '',
+    state: user?.state || '',
+    zip: user?.zip || '',
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -65,29 +65,30 @@ export const AccountForm: React.FC = () => {
 
       // Only make API call if there are changes to send
       if (Object.keys(updateData).length > 0) {
-        const userIdentifier = user.email || user.loginUsername || '';
-        if (!userIdentifier) {
-          throw new Error('User email or username not found');
-        }
-        
-        await updateDonorAPI(userIdentifier, updateData);
+        await updateDonorAPI(user.email || user.loginUsername || '', updateData);
+
+        // Update the user in context and localStorage with the new data
+        const updatedUser: User = {
+          ...user,
+          firstName: formData.firstName,
+          lastName: formData.lastName
+        };
+        updateUserProfile(updatedUser);
       }
       
       // Always store the local-only fields in context
       // These fields aren't sent to the backend but are kept in the frontend
-      if (user) {
-        const updatedUser: User = {
-          ...user,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          zip: formData.zip
-        };
-        updateUserProfile(updatedUser);
-      }
+      const updatedUser: User = {
+        ...user,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip
+      };
+      updateUserProfile(updatedUser);
       
       toast.success('Account updated successfully');
     } catch (error) {
@@ -99,11 +100,7 @@ export const AccountForm: React.FC = () => {
   };
 
   if (!user) {
-    return (
-      <div className="p-4 text-center">
-        <p className="text-muted-foreground">Please log in to view your account</p>
-      </div>
-    );
+    return <div>Please log in to view your account</div>;
   }
 
   // Helper to determine if a field is supported by the backend

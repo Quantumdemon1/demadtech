@@ -17,7 +17,6 @@ interface PersonalInfoFieldsProps {
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   showPassword: boolean;
   setShowPassword: (show: boolean) => void;
-  formErrors?: {[key: string]: string};
 }
 
 const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
@@ -25,7 +24,6 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
   handleChange,
   showPassword,
   setShowPassword,
-  formErrors = {},
 }) => {
   return (
     <>
@@ -41,11 +39,8 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             value={formData.firstName}
             onChange={handleChange}
             required
-            className={`input-field ${formErrors.firstName ? 'border-red-500' : ''}`}
+            className="input-field"
           />
-          {formErrors.firstName && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.firstName}</p>
-          )}
         </div>
         
         <div className="space-y-2">
@@ -59,11 +54,8 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             value={formData.lastName}
             onChange={handleChange}
             required
-            className={`input-field ${formErrors.lastName ? 'border-red-500' : ''}`}
+            className="input-field"
           />
-          {formErrors.lastName && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.lastName}</p>
-          )}
         </div>
       </div>
       
@@ -79,11 +71,8 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           value={formData.email}
           onChange={handleChange}
           required
-          className={`input-field ${formErrors.email ? 'border-red-500' : ''}`}
+          className="input-field"
         />
-        {formErrors.email && (
-          <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
-        )}
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -100,7 +89,7 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
               value={formData.password}
               onChange={handleChange}
               required
-              className={`input-field pr-10 ${formErrors.password ? 'border-red-500' : ''}`}
+              className="input-field pr-10"
             />
             <button
               type="button"
@@ -109,9 +98,6 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             >
               {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
             </button>
-            {formErrors.password && (
-              <p className="text-red-500 text-sm mt-1">{formErrors.password}</p>
-            )}
           </div>
         </div>
         
@@ -127,11 +113,8 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
             value={formData.confirmPassword}
             onChange={handleChange}
             required
-            className={`input-field ${formErrors.confirmPassword ? 'border-red-500' : ''}`}
+            className="input-field"
           />
-          {formErrors.confirmPassword && (
-            <p className="text-red-500 text-sm mt-1">{formErrors.confirmPassword}</p>
-          )}
         </div>
       </div>
       
@@ -146,11 +129,8 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           placeholder="(123) 456-7890"
           value={formData.phone}
           onChange={handleChange}
-          className={`input-field ${formErrors.phone ? 'border-red-500' : ''}`}
+          className="input-field"
         />
-        {formErrors.phone && (
-          <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>
-        )}
       </div>
       
       <div className="space-y-2">
@@ -163,11 +143,8 @@ const PersonalInfoFields: React.FC<PersonalInfoFieldsProps> = ({
           placeholder="Your occupation"
           value={formData.occupation}
           onChange={handleChange}
-          className={`input-field ${formErrors.occupation ? 'border-red-500' : ''}`}
+          className="input-field"
         />
-        {formErrors.occupation && (
-          <p className="text-red-500 text-sm mt-1">{formErrors.occupation}</p>
-        )}
       </div>
     </>
   );

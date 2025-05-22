@@ -1,41 +1,26 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import useAuth from '@/hooks/useAuth';
 import { ArrowRight, Share2, PieChart, Trophy } from 'lucide-react';
-
 const Index: React.FC = () => {
-  const { user } = useAuth();
-  
-  // Add a simple error boundary with console logging
-  React.useEffect(() => {
-    console.log("Index page mounted");
-    return () => {
-      console.log("Index page unmounted");
-    };
-  }, []);
-  
-  return (
-    <div className="flex min-h-screen flex-col bg-background">
-      {/* Header */}
+  const {
+    user
+  } = useAuth();
+  return <div className="flex min-h-screen flex-col">
       <Header />
       
-      {/* Main content */}
       <main className="flex-1">
         {/* Hero section */}
         <section className="relative overflow-hidden bg-campaign-navy py-20 text-white">
           <div className="absolute inset-0 z-0 bg-gradient-to-br from-campaign-navy via-campaign-navy-light to-campaign-navy-dark opacity-90"></div>
-          
-          {/* Hero background image - using plain HTML background to avoid Three.js on this page */}
           <div className="absolute inset-0 z-0 opacity-10" style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1505623776320-7edecf5f0771?ixlib=rb-4.0.3&auto=format&fit=crop&w=1650&q=80")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}></div>
+          backgroundImage: 'url("https://images.unsplash.com/photo-1505623776320-7edecf5f0771?ixlib=rb-4.0.3&auto=format&fit=crop&w=1650&q=80")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}></div>
           
-          {/* Hero content */}
           <div className="container relative z-10">
             <div className="mx-auto max-w-3xl text-center">
               <h1 className="animate-fade-in-up text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
@@ -51,15 +36,11 @@ const Index: React.FC = () => {
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                {user ? (
-                  <Button asChild variant="outline" size="lg" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
+                {user ? <Button asChild variant="outline" size="lg" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
                     <Link to="/dashboard">View My Campaigns</Link>
-                  </Button>
-                ) : (
-                  <Button asChild variant="outline" size="lg" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
+                  </Button> : <Button asChild variant="outline" size="lg" className="border-white/20 bg-white/10 text-white hover:bg-white/20">
                     <Link to="/login">Log In</Link>
-                  </Button>
-                )}
+                  </Button>}
               </div>
             </div>
           </div>
@@ -179,7 +160,6 @@ const Index: React.FC = () => {
         </section>
       </main>
       
-      {/* Footer */}
       <footer className="border-t bg-white py-12">
         <div className="container">
           <div className="text-center">
@@ -190,8 +170,6 @@ const Index: React.FC = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;

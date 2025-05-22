@@ -8,137 +8,120 @@ const ThreeBackground: React.FC = () => {
   useEffect(() => {
     if (!mountRef.current) return;
 
-    // Create a simpler scene setup
+    // Scene setup
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    
-    // Configure renderer with fail-safe
-    try {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setClearColor(0x000000, 0);
-      mountRef.current.appendChild(renderer.domElement);
-    } catch (error) {
-      console.error("Error setting up renderer:", error);
-      return; // Stop if renderer setup fails
-    }
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+    mountRef.current.appendChild(renderer.domElement);
 
-    // Basic lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x404040);
     scene.add(ambientLight);
 
-    // Create a very small number of particles
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(1, 1, 1);
+    scene.add(directionalLight);
+
+    // Create geometric objects (particles) for the background
     const particles: THREE.Mesh[] = [];
-    const particleCount = 10; // Drastically reduced count
-    
-    try {
-      for (let i = 0; i < particleCount; i++) {
-        const geometry = new THREE.SphereGeometry(0.05, 8, 8);
-        const material = new THREE.MeshBasicMaterial({
-          color: Math.random() > 0.5 ? 0xF47521 : 0x1F2937,
-          transparent: true,
-          opacity: 0.5,
-        });
-        const particle = new THREE.Mesh(geometry, material);
+    const particleCount = 100;
+    for (let i = 0; i < particleCount; i++) {
+      const geometry = new THREE.SphereGeometry(0.05 + Math.random() * 0.1, 8, 8);
+      const material = new THREE.MeshPhongMaterial({
+        color: Math.random() > 0.5 ? 0xF47521 : 0x1F2937,
+        transparent: true,
+        opacity: 0.7,
+      });
+      const particle = new THREE.Mesh(geometry, material);
 
-        // Simple positioning
-        particle.position.x = (Math.random() - 0.5) * 10;
-        particle.position.y = (Math.random() - 0.5) * 10;
-        particle.position.z = Math.random() * 5 - 10;
+      // Position randomly; mostly behind the camera
+      particle.position.x = (Math.random() - 0.5) * 10;
+      particle.position.y = (Math.random() - 0.5) * 10;
+      particle.position.z = Math.random() * 5 - 10;
 
-        scene.add(particle);
-        particles.push(particle);
-      }
-    } catch (error) {
-      console.error("Error creating particles:", error);
+      // Add random rotation
+      particle.rotation.x = Math.random() * Math.PI;
+      particle.rotation.y = Math.random() * Math.PI;
+
+      scene.add(particle);
+      particles.push(particle);
     }
 
     // Position camera
     camera.position.z = 5;
 
-    // Handle window resize - with error handling
+    // Handle window resize
     const handleResize = () => {
-      try {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        renderer.setSize(width, height);
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-      } catch (error) {
-        console.error("Error in resize handler:", error);
-      }
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
     };
-    
     window.addEventListener('resize', handleResize);
 
-    // Very simple animation loop
+    // Animation loop
     let animationId: number;
     const animate = () => {
-      try {
-        animationId = requestAnimationFrame(animate);
-        
-        // Simple slow movement
-        particles.forEach((particle) => {
-          particle.position.z += 0.001;
-          
-          // Reset particle
-          if (particle.position.z > 5) {
-            particle.position.z = -10;
-          }
-        });
-        
-        renderer.render(scene, camera);
-      } catch (error) {
-        console.error("Error in animation loop:", error);
-        cancelAnimationFrame(animationId);
-      }
-    };
-    
-    // Start animation
-    try {
-      animate();
-    } catch (error) {
-      console.error("Error starting animation:", error);
-    }
+      animationId = requestAnimationFrame(animate);
 
-    // Cleanup function
+      // Animate particles
+      particles.forEach((particle) => {
+        particle.rotation.x += 0.002;
+        particle.rotation.y += 0.002;
+        particle.position.z += 0.01;
+
+        // Reset particle if it gets too close to the camera
+        if (particle.position.z > 5) {
+          particle.position.z = -10;
+          particle.position.x = (Math.random() - 0.5) * 10;
+          particle.position.y = (Math.random() - 0.5) * 10;
+        }
+      });
+
+      renderer.render(scene, camera);
+    };
+    animate();
+
+    // Cleanup on unmount
     return () => {
-      // Clean up event listeners
       window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationId);
       
-      // Cancel animation frame
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-      
-      // Properly dispose resources
-      try {
-        particles.forEach(particle => {
-          scene.remove(particle);
-          if (particle.geometry) particle.geometry.dispose();
-          if (particle.material) {
-            if (Array.isArray(particle.material)) {
-              particle.material.forEach(material => material.dispose());
+      // Dispose all geometries and materials
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach(material => material.dispose());
             } else {
-              particle.material.dispose();
+              object.material.dispose();
             }
           }
-        });
-        
-        renderer.dispose();
-        
-        // Remove canvas from DOM
-        if (mountRef.current && mountRef.current.contains(renderer.domElement)) {
-          mountRef.current.removeChild(renderer.domElement);
         }
-      } catch (error) {
-        console.error("Error in cleanup:", error);
+      });
+      
+      // Clear scene
+      while(scene.children.length > 0) {
+        scene.remove(scene.children[0]);
+      }
+      
+      renderer.dispose();
+      if (mountRef.current && mountRef.current.contains(renderer.domElement)) {
+        mountRef.current.removeChild(renderer.domElement);
       }
     };
   }, []);
 
-  // Ensure the component takes up the full viewport
-  return <div ref={mountRef} className="fixed inset-0 -z-10" />;
+  return <div ref={mountRef} className="absolute inset-0 -z-10" />;
 };
 
 export default ThreeBackground;
