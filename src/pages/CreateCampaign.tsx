@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
@@ -95,11 +94,80 @@ const CreateCampaign: React.FC = () => {
     }));
   };
   
+  // Enhanced validation function
+  const validateCampaignForm = () => {
+    const errors = [];
+    
+    // Required fields validation
+    if (!formData.name.trim()) {
+      errors.push("Campaign name is required");
+    } else if (formData.name.length < 3) {
+      errors.push("Campaign name must be at least 3 characters long");
+    } else if (formData.name.length > 100) {
+      errors.push("Campaign name must be less than 100 characters");
+    }
+    
+    if (!selectedInitiativeGuid) {
+      errors.push("Please select an initiative");
+    }
+    
+    if (!formData.contentText.trim()) {
+      errors.push("Campaign description is required");
+    } else if (formData.contentText.length < 10) {
+      errors.push("Campaign description must be at least 10 characters long");
+    }
+    
+    // Date validation
+    if (!formData.startDate) {
+      errors.push("Start date is required");
+    }
+    
+    if (!formData.endDate) {
+      errors.push("End date is required");
+    }
+    
+    // Check if end date is after start date
+    if (formData.startDate && formData.endDate) {
+      const startDate = new Date(formData.startDate);
+      const endDate = new Date(formData.endDate);
+      
+      if (endDate < startDate) {
+        errors.push("End date must be after start date");
+      }
+      
+      // Check if start date is not in the past
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (startDate < today) {
+        errors.push("Start date cannot be in the past");
+      }
+    }
+    
+    // Ad spend validation
+    if (formData.adSpend < 100) {
+      errors.push("Minimum ad spend is $100");
+    }
+    
+    // Validate seed questions if they exist
+    if (selectedInitiative?.seedQuestions?.length) {
+      const unansweredQuestions = selectedInitiative.seedQuestions.filter(q => !seedAnswers[q] || !seedAnswers[q].trim());
+      
+      if (unansweredQuestions.length > 0) {
+        errors.push("Please answer all initiative questions");
+      }
+    }
+    
+    return errors;
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedInitiativeGuid) {
-      toast.error("Please select an initiative");
+    // Validate form before submission
+    const validationErrors = validateCampaignForm();
+    if (validationErrors.length > 0) {
+      validationErrors.forEach(error => toast.error(error));
       return;
     }
     

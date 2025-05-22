@@ -37,39 +37,64 @@ export const SignUpForm: React.FC = () => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Enhanced validation function
+  const validateForm = () => {
+    const errors = [];
     
-    // Form validation
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      errors.push("Please enter your email address");
+    } else if (!emailRegex.test(formData.email)) {
+      errors.push("Please enter a valid email address");
+    }
+    
+    // Password validation
+    if (!formData.password.trim()) {
+      errors.push("Please enter a password");
+    } else if (formData.password.length < 8) {
+      errors.push("Password must be at least 8 characters long");
+    }
+    
+    // Name validation
     if (!formData.firstName.trim()) {
-      toast.error('Please enter your first name');
-      return;
+      errors.push("First name is required");
     }
     
     if (!formData.lastName.trim()) {
-      toast.error('Please enter your last name');
-      return;
+      errors.push("Last name is required");
     }
     
-    if (!formData.email.trim()) {
-      toast.error('Please enter your email address');
-      return;
-    }
-    
-    if (!formData.password.trim()) {
-      toast.error('Please enter a password');
-      return;
-    }
-    
+    // Password confirmation
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
+      errors.push("Passwords do not match");
     }
     
     // Check password strength
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-    if (!passwordRegex.test(formData.password)) {
-      toast.error('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
+    if (formData.password && !passwordRegex.test(formData.password)) {
+      errors.push("Password must contain at least one uppercase letter, one lowercase letter, and one number");
+    }
+    
+    // Optional fields validation
+    if (formData.phone && !/^\(\d{3}\) \d{3}-\d{4}$|^\d{10}$/.test(formData.phone.replace(/\s/g, ''))) {
+      errors.push("Please enter a valid phone number");
+    }
+    
+    if (formData.zip && !/^\d{5}(-\d{4})?$/.test(formData.zip)) {
+      errors.push("Please enter a valid ZIP code");
+    }
+    
+    return errors;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate form before submission
+    const validationErrors = validateForm();
+    if (validationErrors.length > 0) {
+      validationErrors.forEach(error => toast.error(error));
       return;
     }
     
@@ -85,6 +110,7 @@ export const SignUpForm: React.FC = () => {
     } catch (error) {
       // Error handling is done in the auth context
       console.error('Signup form error:', error);
+    } finally {
       setIsLoading(false);
     }
   };
