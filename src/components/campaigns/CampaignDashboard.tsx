@@ -22,7 +22,7 @@ const CampaignDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !user.email) {
+    if (!user || (!user.email && !user.loginUsername)) {
       setLoading(false);
       return;
     }
@@ -30,10 +30,12 @@ const CampaignDashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
+        const loginUsername = user.email || user.loginUsername || '';
+        
         // Fetch both campaigns and initiatives in parallel
         const [campaignsResponse, initiativesResponse] = await Promise.all([
-          getDonorAdCampaignsAPI(user.email),
-          getAllInitiativesAPI(user.email)
+          getDonorAdCampaignsAPI(loginUsername),
+          getAllInitiativesAPI(loginUsername)
         ]);
 
         // Map backend initiatives to frontend format
@@ -65,10 +67,18 @@ const CampaignDashboard: React.FC = () => {
           { impressions: 0, clicks: 0, shares: 0 }
         );
         setTotalMetrics(metrics);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching dashboard data:", error);
-        toast.error("Failed to load campaigns. Please try again.");
+        
+        if (error?.status === 401) {
+          toast.error("Authentication failed. Please log in again.");
+        } else if (error?.name === 'TypeError' && error?.message.includes('Failed to fetch')) {
+          toast.error("Network error. Please check your connection.");
+        } else {
+          toast.error("Failed to load campaigns. Please try again.");
+        }
         setCampaigns([]);
+        setInitiatives([]);
       } finally {
         setLoading(false);
       }
