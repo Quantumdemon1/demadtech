@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect } from 'react';
 import { User, AuthContextType } from '@/types';
 import { toast } from 'sonner';
@@ -17,7 +16,8 @@ import {
   mapUserToPoliticalClientRequest,
   mapAdminToUser
 } from '@/services/dataMapping';
-import { setCookie, removeCookie } from '@/utils/cookieUtils';
+import { removeCookie } from '@/utils/cookieUtils';
+import { API_BASE_URL } from '@/services/api/base';
 
 // Create AuthContext
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,34 +44,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (emailOrUsername: string, password: string, role?: 'donor' | 'politicalClient' | 'admin'): Promise<User> => {
     setLoading(true);
     try {
-      // Set loginPw cookie for authentication
-      setCookie('loginPw', password, { path: '/' });
+      // Determine the login endpoint based on role
+      const endpoint = role ? `/login/${role}` : '/login/donor';
       
-      let userData: User;
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Important: includes cookies
+        body: JSON.stringify({
+          loginUsername: emailOrUsername,
+          loginPw: password
+        })
+      });
       
-      // Decide which API endpoint to use based on role
-      if (role === 'politicalClient') {
-        const clientData = await getPoliticalClientAPI(emailOrUsername);
-        userData = mapPoliticalClientToUser(clientData);
-      } else if (role === 'admin') {
-        const adminData = await getAdminDetailsAPI(emailOrUsername);
-        userData = mapAdminToUser(adminData);
-      } else {
-        // Default to donor login if role is not specified or is 'donor'
-        const donorData = await getDonorAPI(emailOrUsername);
-        userData = mapDonorToUser(donorData);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
       }
       
-      // Store user in localStorage
+      const { user, role: userRole } = await response.json();
+      
+      // Map backend user data to frontend format
+      const userData = userRole === 'politicalClient' 
+        ? mapPoliticalClientToUser(user)
+        : userRole === 'admin'
+          ? mapAdminToUser(user)
+          : mapDonorToUser(user);
+      
+      // Store user in localStorage and state
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
       toast.success('Logged in successfully');
+      
       return userData;
     } catch (error) {
-      // If login fails, remove the loginPw cookie
-      removeCookie('loginPw');
       console.error('Login error:', error);
-      toast.error(error instanceof Error ? error.message : 'Invalid email or password');
+      toast.error(error instanceof Error ? error.message : 'Invalid credentials');
       throw error;
     } finally {
       setLoading(false);

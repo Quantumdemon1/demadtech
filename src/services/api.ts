@@ -1,3 +1,4 @@
+
 // API Client Service for communicating with the backend
 // Backend URL is loaded from environment variable VITE_API_BASE_URL
 
@@ -7,7 +8,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
  * Base request function for making API calls to the backend
  * - Automatically prepends API_BASE_URL to all paths
  * - Sets Content-Type to application/json for POST/PUT requests
- * - Includes credentials to send cookies (accessToken, loginPw) with every request
+ * - Includes credentials to send cookies with every request
  * - Handles error responses and parses JSON data
  */
 async function request(endpoint: string, options: RequestInit = {}) {
@@ -19,7 +20,7 @@ async function request(endpoint: string, options: RequestInit = {}) {
 
     const config: RequestInit = {
         ...options,
-        // Include credentials (cookies) with every request
+        // Always include cookies with requests
         credentials: 'include', 
         headers: {
             ...defaultHeaders,
@@ -37,6 +38,15 @@ async function request(endpoint: string, options: RequestInit = {}) {
             // If response is not JSON or empty
             errorData = { message: response.statusText, status: response.status };
         }
+        
+        // Handle structured backend errors
+        if (errorData?.errorCode) {
+            const error = new Error(errorData.message || 'API Error');
+            (error as any).code = errorData.errorCode;
+            (error as any).details = errorData.details;
+            throw error;
+        }
+        
         // Prefer backend error message if available
         const message = errorData?.error || errorData?.message || `API Error: ${response.status}`;
         const error = new Error(message);
