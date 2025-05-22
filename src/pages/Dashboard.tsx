@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -10,7 +9,7 @@ import InitiativesTab from '@/components/initiatives/InitiativesTab';
 import { Initiative } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Building, Plus } from 'lucide-react';
-import { MetricCard } from '@/components/ui/MetricCard';
+import MetricCard from '@/components/ui/MetricCard';
 import InitiativeSection from '@/components/initiatives/InitiativeSection';
 import { getTestDataForRole } from '@/utils/authUtils';
 
