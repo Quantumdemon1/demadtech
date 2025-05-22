@@ -7,3 +7,4 @@ export * from './initiative';
 export * from './political-client';
 export * from './campaign';
 export * from './award';
+export * from './auth';
