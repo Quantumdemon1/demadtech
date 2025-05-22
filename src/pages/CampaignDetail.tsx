@@ -24,7 +24,7 @@ const CampaignDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id || !user || !user.email) {
+    if (!id || !user || (!user.email && !user.loginUsername)) {
       setLoading(false);
       return;
     }
@@ -32,10 +32,12 @@ const CampaignDetail: React.FC = () => {
     const fetchCampaignData = async () => {
       setLoading(true);
       try {
+        const loginUsername = user.email || user.loginUsername || '';
+        
         // Fetch both specific campaign and all initiatives in parallel
         const [campaignResponse, initiativesResponse] = await Promise.all([
-          getAdCampaignByIdAPI(user.email, id),
-          getAllInitiativesAPI(user.email)
+          getAdCampaignByIdAPI(loginUsername, id),
+          getAllInitiativesAPI(loginUsername)
         ]);
 
         // Map backend initiatives to frontend format
