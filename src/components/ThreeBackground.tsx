@@ -94,28 +94,17 @@ const ThreeBackground: React.FC = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationId);
-      
-      // Dispose all geometries and materials
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          if (object.geometry) object.geometry.dispose();
-          if (object.material) {
-            if (Array.isArray(object.material)) {
-              object.material.forEach(material => material.dispose());
-            } else {
-              object.material.dispose();
-            }
-          }
+      // Dispose geometries and materials for each particle
+      particles.forEach((particle) => {
+        particle.geometry.dispose();
+        if (Array.isArray(particle.material)) {
+          particle.material.forEach((mat) => mat.dispose());
+        } else {
+          particle.material.dispose();
         }
       });
-      
-      // Clear scene
-      while(scene.children.length > 0) {
-        scene.remove(scene.children[0]);
-      }
-      
       renderer.dispose();
-      if (mountRef.current && mountRef.current.contains(renderer.domElement)) {
+      if (mountRef.current && renderer.domElement.parentNode === mountRef.current) {
         mountRef.current.removeChild(renderer.domElement);
       }
     };
