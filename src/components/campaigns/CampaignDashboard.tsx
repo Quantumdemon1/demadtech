@@ -9,6 +9,8 @@ import { toast } from 'sonner';
 import useAuth from '@/hooks/useAuth';
 import { getDonorAdCampaignsAPI, getAllInitiativesAPI } from '@/services/api';
 import { mapBackendAdCampaignToCampaign, mapBackendInitiativeToInitiative } from '@/services/dataMapping';
+import { Plus } from 'lucide-react';
+import { getTestDataForRole } from '@/utils/authUtils';
 
 const CampaignDashboard: React.FC = () => {
   const { user } = useAuth();
