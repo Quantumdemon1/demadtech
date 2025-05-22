@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import RoleSelection, { UserRole } from './RoleSelection';
 import { toast } from 'sonner';
-import TestAccountSection from './TestAccountSection';
 import LoginCredentialsForm from './LoginCredentialsForm';
 
 export const LoginForm: React.FC = () => {
@@ -47,52 +46,6 @@ export const LoginForm: React.FC = () => {
     setShowRoleSelection(false);
   };
 
-  // Update the test account login handler to always redirect to /dashboard
-  const loginAsTestAccount = (role: UserRole) => {
-    setIsLoading(true);
-    
-    // Create mock user data based on role
-    const mockUserData = {
-      donor: {
-        id: 'test-donor-id',
-        name: 'Test Donor',
-        email: 'testdonor@example.com',
-        role: 'donor',
-        balance: 1000,
-        joinDate: new Date().toISOString()
-      },
-      politicalClient: {
-        id: 'test-org-id',
-        name: 'Test Organization',
-        loginUsername: 'testorg',
-        role: 'politicalClient',
-        email: 'testorg@example.com',
-        joinDate: new Date().toISOString()
-      },
-      admin: {
-        id: 'test-admin-id',
-        name: 'Test Admin',
-        email: 'testadmin@example.com',
-        role: 'admin',
-        joinDate: new Date().toISOString()
-      }
-    };
-    
-    const userData = mockUserData[role];
-    
-    // Store mock user in localStorage to simulate login
-    localStorage.setItem('user', JSON.stringify(userData));
-    
-    // Show success message
-    toast.success(`Logged in as ${role} successfully`);
-    
-    // Set loading to false
-    setIsLoading(false);
-    
-    // Always navigate to /dashboard regardless of role
-    navigate('/dashboard');
-  };
-
   return (
     <div className="form-container shadow-lg bg-white dark:bg-gray-800 p-8 rounded-lg w-full max-w-2xl mx-auto">
       <div className="text-center mb-12">
@@ -108,11 +61,6 @@ export const LoginForm: React.FC = () => {
             selectedRole={selectedRole}
             onRoleSelect={handleRoleSelect}
             showAdmin={false} // Removing admin option as it will use real backend
-          />
-          
-          <TestAccountSection 
-            isLoading={isLoading} 
-            loginAsTestAccount={loginAsTestAccount} 
           />
           
           <div className="mt-12 text-center">
