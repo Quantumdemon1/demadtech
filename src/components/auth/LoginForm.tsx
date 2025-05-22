@@ -18,13 +18,25 @@ export const LoginForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email.trim()) {
+      toast.error('Please enter your email or username');
+      return;
+    }
+    
+    if (!password.trim()) {
+      toast.error('Please enter your password');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
       await login(email, password, selectedRole || undefined);
       navigate('/dashboard');
     } catch (error) {
-      // Error handling is done in the context
+      // Error handling is done in the auth context
+      console.error('Login form error:', error);
       setIsLoading(false);
     }
   };

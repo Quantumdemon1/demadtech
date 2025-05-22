@@ -39,15 +39,43 @@ export const SignUpForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Form validation
+    if (!formData.firstName.trim()) {
+      toast.error('Please enter your first name');
+      return;
+    }
+    
+    if (!formData.lastName.trim()) {
+      toast.error('Please enter your last name');
+      return;
+    }
+    
+    if (!formData.email.trim()) {
+      toast.error('Please enter your email address');
+      return;
+    }
+    
+    if (!formData.password.trim()) {
+      toast.error('Please enter a password');
+      return;
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    
+    // Check password strength
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    if (!passwordRegex.test(formData.password)) {
+      toast.error('Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      if (formData.password !== formData.confirmPassword) {
-        toast.error('Passwords do not match');
-        setIsLoading(false);
-        return;
-      }
-      
       const { confirmPassword, ...userData } = formData;
       if (selectedRole) {
         userData.role = selectedRole;
@@ -55,7 +83,8 @@ export const SignUpForm: React.FC = () => {
       await signup(userData, formData.password);
       navigate('/dashboard');
     } catch (error) {
-      // Error handling is done in the context
+      // Error handling is done in the auth context
+      console.error('Signup form error:', error);
       setIsLoading(false);
     }
   };

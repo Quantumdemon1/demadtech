@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect } from 'react';
 import { User, AuthContextType } from '@/types';
 import { toast } from 'sonner';
@@ -79,7 +80,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return userData;
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(error instanceof Error ? error.message : 'Invalid credentials');
+      
+      // Handle specific login error codes
+      if ((error as any).code === 'INVALID_CREDENTIALS') {
+        toast.error('Invalid username or password');
+      } else if ((error as any).code === 'ACCOUNT_LOCKED') {
+        toast.error('Your account has been locked. Please contact support.');
+      } else if ((error as any).code === 'USER_NOT_FOUND') {
+        toast.error('User not found. Please check your credentials.');
+      } else {
+        toast.error(error instanceof Error ? error.message : 'Invalid credentials');
+      }
+      
       throw error;
     } finally {
       setLoading(false);
@@ -103,7 +115,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return await login(userData.email || donorData.loginUsername, password, 'donor');
     } catch (error) {
       console.error('Signup error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to create account');
+      
+      // Handle specific error codes from backend
+      if ((error as any).code === 'USERNAME_TAKEN') {
+        toast.error('This email is already registered. Please use a different email.');
+      } else if ((error as any).code === 'MISSING_REQUIRED_FIELDS') {
+        const missingFields = (error as any).details?.missing_fields || [];
+        toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      } else if ((error as any).code === 'INVALID_EMAIL_FORMAT') {
+        toast.error('Please enter a valid email address.');
+      } else if ((error as any).code === 'WEAK_PASSWORD') {
+        toast.error('Password does not meet security requirements. Please use a stronger password.');
+      } else {
+        toast.error(error instanceof Error ? error.message : 'Failed to create account');
+      }
+      
       throw error;
     } finally {
       setLoading(false);
@@ -127,7 +153,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return await login(userData.loginUsername || clientData.loginUsername, password, 'politicalClient');
     } catch (error) {
       console.error('Political client signup error:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to create political client account');
+      
+      // Handle specific error codes
+      if ((error as any).code === 'USERNAME_TAKEN') {
+        toast.error('This username is already taken. Please choose a different username.');
+      } else if ((error as any).code === 'MISSING_REQUIRED_FIELDS') {
+        const missingFields = (error as any).details?.missing_fields || [];
+        toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      } else if ((error as any).code === 'INVALID_ORGANIZATION_INFO') {
+        toast.error('Please provide valid organization information.');
+      } else if ((error as any).code === 'WEAK_PASSWORD') {
+        toast.error('Password does not meet security requirements. Please use a stronger password.');
+      } else {
+        toast.error(error instanceof Error ? error.message : 'Failed to create political client account');
+      }
+      
       throw error;
     } finally {
       setLoading(false);
