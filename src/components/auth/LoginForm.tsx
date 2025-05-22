@@ -5,6 +5,8 @@ import useAuth from '@/hooks/useAuth';
 import RoleSelection, { UserRole } from './RoleSelection';
 import { toast } from 'sonner';
 import LoginCredentialsForm from './LoginCredentialsForm';
+import TestAccountSection from './TestAccountSection';
+import { getTestCredentials } from '@/utils/authUtils';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -46,6 +48,22 @@ export const LoginForm: React.FC = () => {
     setShowRoleSelection(false);
   };
 
+  // Handle test account login
+  const loginAsTestAccount = async (role: UserRole) => {
+    setIsLoading(true);
+    
+    try {
+      const testCreds = getTestCredentials();
+      const credentials = testCreds[role];
+      await login(credentials.username, credentials.password, role);
+      // Navigation to dashboard will happen automatically in login function
+    } catch (error) {
+      console.error('Test account login error:', error);
+      toast.error(`Failed to log in as test ${role}`);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="form-container shadow-lg bg-white dark:bg-gray-800 p-8 rounded-lg w-full max-w-2xl mx-auto">
       <div className="text-center mb-12">
@@ -61,6 +79,11 @@ export const LoginForm: React.FC = () => {
             selectedRole={selectedRole}
             onRoleSelect={handleRoleSelect}
             showAdmin={false} // Removing admin option as it will use real backend
+          />
+          
+          <TestAccountSection
+            isLoading={isLoading}
+            loginAsTestAccount={loginAsTestAccount}
           />
           
           <div className="mt-12 text-center">
