@@ -1,8 +1,11 @@
-
 // API Client Service for communicating with the backend
 // Backend URL is loaded from environment variable VITE_API_BASE_URL
+import { mockAPI } from './mockAPI';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/v1';
+
+// Flag to control whether to use mock API or real API
+const USE_MOCK_API = true; // Set to false when real backend is ready
 
 /**
  * Base request function for making API calls to the backend
@@ -12,6 +15,25 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
  * - Handles error responses and parses JSON data
  */
 async function request(endpoint: string, options: RequestInit = {}) {
+    // Use mock API if flag is set
+    if (USE_MOCK_API) {
+        console.log(`🧪 Mock API: ${options.method || 'GET'} ${endpoint}`);
+        return await mockAPI.mockRequest(endpoint, options);
+    }
+
+    // Otherwise use the real API
+    try {
+        return await realAPIRequest(endpoint, options);
+    } catch (error) {
+        console.warn('Real API failed:', error);
+        throw error;
+    }
+}
+
+/**
+ * Real API request function - used when mock mode is disabled
+ */
+async function realAPIRequest(endpoint: string, options: RequestInit = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     
     const defaultHeaders: HeadersInit = {
