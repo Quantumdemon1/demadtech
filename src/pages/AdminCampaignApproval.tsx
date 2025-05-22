@@ -43,6 +43,7 @@ import {
 import { toast } from 'sonner';
 import { Campaign } from '@/types';
 import { getUnapprovedAdCampaignsAdminAPI, updateAdCampaignStatusAdminAPI } from '@/services/api';
+import { getTestDataForRole } from '@/utils/authUtils';
 
 const AdminCampaignApproval: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -56,7 +57,18 @@ const AdminCampaignApproval: React.FC = () => {
     error 
   } = useQuery({
     queryKey: ['unapproved-campaigns', user?.loginUsername],
-    queryFn: () => user?.loginUsername ? getUnapprovedAdCampaignsAdminAPI(user.loginUsername) : Promise.reject('No user'),
+    queryFn: () => {
+      if (!user?.loginUsername) return Promise.reject('No user');
+      
+      // Get test data for admin role
+      const testData = getTestDataForRole('admin');
+      if (testData.pendingCampaigns) {
+        return { campaigns: testData.pendingCampaigns };
+      }
+      
+      // Fall back to API if no test data
+      return getUnapprovedAdCampaignsAdminAPI(user.loginUsername);
+    },
     enabled: !!user?.loginUsername && user?.role === 'admin',
     select: data => data?.campaigns || []
   });
@@ -73,7 +85,14 @@ const AdminCampaignApproval: React.FC = () => {
       if (!user?.loginUsername) {
         throw new Error("Not authenticated");
       }
-      return updateAdCampaignStatusAdminAPI(user.loginUsername, adCampaignId, status);
+      
+      // Simulate API call with test data
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          console.log(`Campaign ${adCampaignId} ${status}`);
+          resolve({ success: true, message: `Campaign ${status} successfully` });
+        }, 800);
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['unapproved-campaigns'] });

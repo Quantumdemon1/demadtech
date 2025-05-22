@@ -1,14 +1,33 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import useAuth from '@/hooks/useAuth';
 import Header from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Award, Users, UserCheck } from 'lucide-react';
+import { getTestDataForRole } from '@/utils/authUtils';
 
 const AdminDashboard: React.FC = () => {
   const { user, loading } = useAuth();
+  const [stats, setStats] = useState({
+    pendingApprovals: 0,
+    totalAwards: 12,
+    activePoliticalClients: 8,
+    totalDonors: 150,
+  });
+
+  // Load test data when component mounts
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      const testData = getTestDataForRole('admin');
+      if (testData.pendingCampaigns) {
+        setStats(prevStats => ({
+          ...prevStats,
+          pendingApprovals: testData.pendingCampaigns.length || 0
+        }));
+      }
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -53,7 +72,7 @@ const AdminDashboard: React.FC = () => {
                 <CheckCircle className="h-5 w-5 text-yellow-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{mockStats.pendingApprovals}</div>
+                <div className="text-2xl font-bold">{stats.pendingApprovals}</div>
                 <p className="text-xs text-muted-foreground">Campaigns awaiting review</p>
               </CardContent>
             </Card>
@@ -105,7 +124,9 @@ const AdminDashboard: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <Button asChild className="w-full bg-campaign-orange hover:bg-campaign-orange-dark">
-                  <Link to="/admin/campaign-approval">Manage Approvals</Link>
+                  <Link to="/admin/campaign-approval">
+                    Manage Approvals {stats.pendingApprovals > 0 && `(${stats.pendingApprovals})`}
+                  </Link>
                 </Button>
               </CardContent>
             </Card>
