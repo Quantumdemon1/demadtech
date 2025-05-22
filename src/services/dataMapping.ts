@@ -167,12 +167,20 @@ export function mapCampaignToAdCampaignRequest(campaign: Partial<Campaign>, seed
   initiativeGuid: string;
   description: string;
   seedAnswers: Array<{question: string, answer: string}>;
+  contentType?: 'funny' | 'personal' | 'formal';
+  startDate?: string;
+  endDate?: string;
+  adSpend?: number;
 } {
   return {
     name: campaign.name || '',
     initiativeGuid: campaign.contestId || '',
     description: campaign.contentText || '',
     seedAnswers,
+    contentType: campaign.contentType,
+    startDate: campaign.startDate,
+    endDate: campaign.endDate,
+    adSpend: campaign.adSpend,
   };
 }
 

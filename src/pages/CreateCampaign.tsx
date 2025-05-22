@@ -44,11 +44,12 @@ const CreateCampaign: React.FC = () => {
   // Fetch initiatives on component mount
   useEffect(() => {
     const fetchInitiatives = async () => {
-      if (!user?.email) return;
+      if (!user?.email && !user?.loginUsername) return;
       
       setIsLoadingInitiatives(true);
       try {
-        const response = await getAllInitiativesAPI(user.email);
+        const loginUsername = user.email || user.loginUsername || '';
+        const response = await getAllInitiativesAPI(loginUsername);
         const mappedInitiatives = Array.isArray(response) 
           ? response.map(i => mapBackendInitiativeToInitiative(i))
           : [];
@@ -105,7 +106,7 @@ const CreateCampaign: React.FC = () => {
     try {
       setIsSubmitting(true);
       
-      if (!user?.email) {
+      if (!user?.email && !user?.loginUsername) {
         throw new Error("User not authenticated");
       }
       
@@ -123,12 +124,19 @@ const CreateCampaign: React.FC = () => {
           name: formData.name,
           contestId: selectedInitiativeGuid,
           contentText: formData.contentText,
+          contentType: formData.contentType as 'funny' | 'personal' | 'formal',
+          startDate: formData.startDate,
+          endDate: formData.endDate,
+          adSpend: formData.adSpend,
         },
         formattedSeedAnswers
       );
       
+      // Use email or loginUsername for API call
+      const loginUsername = user.email || user.loginUsername || '';
+      
       // Send request to API
-      const response = await createAdCampaignAPI(user.email, campaignRequest);
+      const response = await createAdCampaignAPI(loginUsername, campaignRequest);
       
       toast.success("Campaign created successfully!");
       
@@ -138,9 +146,16 @@ const CreateCampaign: React.FC = () => {
       } else {
         navigate('/dashboard'); // Fallback if no ID returned
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating campaign:", error);
-      toast.error("Failed to create campaign. Please try again.");
+      
+      if (error.code === 'MISSING_REQUIRED_FIELDS') {
+        toast.error("Please fill in all required fields");
+      } else if (error.code === 'INVALID_INITIATIVE') {
+        toast.error("Selected initiative is not valid");
+      } else {
+        toast.error("Failed to create campaign. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
