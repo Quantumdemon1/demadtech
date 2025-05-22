@@ -33,6 +33,15 @@ const CampaignDetailsPanel: React.FC<CampaignDetailsPanelProps> = ({ campaign })
     }
   };
 
+  // Safe access to candidate names with fallbacks
+  const democratFullName = campaign.contest?.democratFirstName && campaign.contest?.democratLastName
+    ? `${campaign.contest.democratFirstName} ${campaign.contest.democratLastName}`
+    : campaign.contest?.democratFirstName || 'Democratic Candidate';
+
+  const republicanFullName = campaign.contest?.republicanFirstName && campaign.contest?.republicanLastName
+    ? `${campaign.contest.republicanFirstName} ${campaign.contest.republicanLastName}`
+    : campaign.contest?.republicanFirstName || 'Republican Candidate';
+
   return (
     <div className="mb-8 rounded-lg border p-6">
       <h2 className="mb-4 text-2xl font-bold">Campaign Details</h2>
@@ -42,11 +51,11 @@ const CampaignDetailsPanel: React.FC<CampaignDetailsPanelProps> = ({ campaign })
           <div className="space-y-2">
             <p>
               <span className="font-medium">Democrat:</span>{' '}
-              {campaign.contest?.democratFirstName} {campaign.contest?.democratLastName}
+              {democratFullName}
             </p>
             <p>
               <span className="font-medium">Republican:</span>{' '}
-              {campaign.contest?.republicanFirstName} {campaign.contest?.republicanLastName}
+              {republicanFullName}
             </p>
             <p>
               <span className="font-medium">State:</span> {campaign.contest?.state || 'N/A'}
