@@ -23,6 +23,8 @@ export const SignUpForm: React.FC = () => {
     zip: '',
     role: 'donor' as UserRole
   });
+  
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
@@ -31,28 +33,79 @@ export const SignUpForm: React.FC = () => {
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+    
+    // Clear error when user types
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: ''
+      });
+    }
+  };
+  
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+    
+    // Required field validation
+    if (!formData.firstName.trim()) errors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    
+    // Password validation
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters';
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+    
+    // ZIP code validation (if provided)
+    if (formData.zip && !/^\d{5}(-\d{4})?$/.test(formData.zip)) {
+      errors.zip = 'Please enter a valid ZIP code';
+    }
+    
+    // Phone validation (if provided)
+    if (formData.phone && !/^[\d\s()-+]+$/.test(formData.phone)) {
+      errors.phone = 'Please enter a valid phone number';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      toast.error('Please correct the errors in the form');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      if (formData.password !== formData.confirmPassword) {
-        toast.error('Passwords do not match');
-        setIsLoading(false);
-        return;
-      }
-      
       const { confirmPassword, ...userData } = formData;
       if (selectedRole) {
         userData.role = selectedRole;
       }
       await signup(userData, formData.password);
+      toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error) {
       // Error handling is done in the context
@@ -69,7 +122,16 @@ export const SignUpForm: React.FC = () => {
       return;
     }
     
+    if (role === 'admin') {
+      toast.info('Admin registration requires approval. Please contact support.');
+      return;
+    }
+    
     setShowRoleSelection(false);
+    setFormData({
+      ...formData,
+      role
+    });
   };
 
   return (
@@ -105,11 +167,13 @@ export const SignUpForm: React.FC = () => {
               handleChange={handleChange}
               showPassword={showPassword}
               setShowPassword={setShowPassword}
+              formErrors={formErrors}
             />
             
             <AddressFields 
               formData={formData} 
-              handleChange={handleChange} 
+              handleChange={handleChange}
+              formErrors={formErrors}  
             />
             
             <SignUpFormActions isLoading={isLoading} />

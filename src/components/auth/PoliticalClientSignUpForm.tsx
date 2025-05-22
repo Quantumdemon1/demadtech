@@ -15,31 +15,72 @@ const PoliticalClientSignUpForm: React.FC = () => {
     confirmPassword: '',
     role: 'politicalClient' as const,
   });
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { politicalClientSignup } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+    
+    // Clear error when user types
+    if (formErrors[name]) {
+      setFormErrors({
+        ...formErrors,
+        [name]: ''
+      });
+    }
+  };
+
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+    
+    // Required field validation
+    if (!formData.politicalClientName.trim()) {
+      errors.politicalClientName = 'Organization name is required';
+    }
+    
+    if (!formData.loginUsername.trim()) {
+      errors.loginUsername = 'Username is required';
+    } else if (formData.loginUsername.length < 3) {
+      errors.loginUsername = 'Username must be at least 3 characters';
+    }
+    
+    // Password validation
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters';
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      toast.error('Please correct the errors in the form');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      if (formData.password !== formData.confirmPassword) {
-        toast.error('Passwords do not match');
-        setIsLoading(false);
-        return;
-      }
-      
       const { confirmPassword, ...userData } = formData;
       await politicalClientSignup(userData, formData.password);
+      toast.success('Political organization account created successfully!');
       navigate('/dashboard');
     } catch (error) {
       // Error handling is done in the context
@@ -68,7 +109,11 @@ const PoliticalClientSignUpForm: React.FC = () => {
             onChange={handleChange}
             placeholder="Your organization's name"
             required
+            className={formErrors.politicalClientName ? 'border-red-500' : ''}
           />
+          {formErrors.politicalClientName && (
+            <p className="text-red-500 text-sm mt-1">{formErrors.politicalClientName}</p>
+          )}
         </div>
         
         <div className="space-y-2">
@@ -82,7 +127,11 @@ const PoliticalClientSignUpForm: React.FC = () => {
             onChange={handleChange}
             placeholder="Choose a login username"
             required
+            className={formErrors.loginUsername ? 'border-red-500' : ''}
           />
+          {formErrors.loginUsername && (
+            <p className="text-red-500 text-sm mt-1">{formErrors.loginUsername}</p>
+          )}
         </div>
         
         <div className="space-y-2">
@@ -98,7 +147,7 @@ const PoliticalClientSignUpForm: React.FC = () => {
               onChange={handleChange}
               placeholder="••••••••"
               required
-              className="pr-10"
+              className={`pr-10 ${formErrors.password ? 'border-red-500' : ''}`}
             />
             <button
               type="button"
@@ -107,6 +156,9 @@ const PoliticalClientSignUpForm: React.FC = () => {
             >
               {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
             </button>
+            {formErrors.password && (
+              <p className="text-red-500 text-sm mt-1">{formErrors.password}</p>
+            )}
           </div>
         </div>
         
@@ -123,7 +175,7 @@ const PoliticalClientSignUpForm: React.FC = () => {
               onChange={handleChange}
               placeholder="••••••••"
               required
-              className="pr-10"
+              className={`pr-10 ${formErrors.confirmPassword ? 'border-red-500' : ''}`}
             />
             <button
               type="button"
@@ -132,6 +184,9 @@ const PoliticalClientSignUpForm: React.FC = () => {
             >
               {showPassword ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
             </button>
+            {formErrors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">{formErrors.confirmPassword}</p>
+            )}
           </div>
         </div>
         
@@ -151,6 +206,11 @@ const PoliticalClientSignUpForm: React.FC = () => {
           Already have an account?{' '}
           <Link to="/login" className="text-campaign-orange hover:underline">
             Log in
+          </Link>
+        </p>
+        <p className="mt-2">
+          <Link to="/signup" className="text-campaign-orange hover:underline">
+            ← Back to account type selection
           </Link>
         </p>
       </div>
