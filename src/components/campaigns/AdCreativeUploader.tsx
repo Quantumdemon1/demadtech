@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { FileInput } from '@/components/ui/file-input';
@@ -8,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { upsertAdCreativeAPI } from '@/services/api';
 import useAuth from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface AdCreativeUploaderProps {
   campaignId: string;
@@ -20,6 +20,7 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
   onSuccess,
   className 
 }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [caption, setCaption] = useState('');
@@ -33,6 +34,21 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Authentication check
+    const loginUsername = user?.email || user?.loginUsername || '';
+    if (!loginUsername) {
+      toast.error("You must be logged in to upload creatives");
+      navigate('/login');
+      return;
+    }
+    
+    // Check for password cookie
+    if (!document.cookie.includes('loginPw=')) {
+      toast.error("Authentication expired. Please log in again.");
+      navigate('/login');
+      return;
+    }
+    
     if (!file) {
       toast.error("Please select an image to upload");
       return;
@@ -40,11 +56,6 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
     
     if (!name.trim()) {
       toast.error("Please provide a name for this creative");
-      return;
-    }
-    
-    if (!user?.email) {
-      toast.error("You must be logged in to upload creatives");
       return;
     }
 
@@ -59,7 +70,7 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
         // Remove the data:image/jpeg;base64, part
         const base64Content = base64String.split(',')[1];
         
-        await upsertAdCreativeAPI(user.email, {
+        await upsertAdCreativeAPI(loginUsername, {
           adCampaignGuid: campaignId,
           name,
           caption,
@@ -82,9 +93,15 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
         toast.error("Error reading file");
         setIsUploading(false);
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading creative:", error);
-      toast.error("Failed to upload creative. Please try again.");
+      
+      if (error?.status === 401) {
+        toast.error("Authentication expired. Please log in again.");
+        navigate('/login');
+      } else {
+        toast.error("Failed to upload creative. Please try again.");
+      }
       setIsUploading(false);
     }
   };

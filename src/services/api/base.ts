@@ -35,6 +35,17 @@ export function clearApiAuth() {
 }
 
 /**
+ * Checks if the required authentication cookies are present
+ * @returns Object indicating if access token and login password cookies exist
+ */
+export function checkAuthCookies() {
+    return {
+        hasAccessToken: document.cookie.includes('accessToken='),
+        hasLoginPw: document.cookie.includes('loginPw=')
+    };
+}
+
+/**
  * Base request function for making API calls to the backend
  * - Automatically prepends API_BASE_URL to all paths
  * - Sets Content-Type to application/json for POST/PUT requests
@@ -78,8 +89,20 @@ export async function request(endpoint: string, options: RequestInit = {}) {
             
             // Enhanced error logging
             if (response.status === 401) {
-                console.error('🔐 Authentication failed. Access token may be invalid or missing.');
+                console.error('🔐 Authentication failed. Access token or login password may be invalid or missing.');
                 console.log('Current cookies:', document.cookie);
+                
+                // Check specific authentication cookies
+                const authCookies = checkAuthCookies();
+                console.log('Auth cookies present:', authCookies);
+                
+                if (!authCookies.hasAccessToken) {
+                    console.error('Missing accessToken cookie');
+                }
+                
+                if (!authCookies.hasLoginPw) {
+                    console.error('Missing loginPw cookie');
+                }
             } else if (response.status === 0) {
                 console.error('🚫 CORS error or backend not reachable.');
                 console.log('Attempted URL:', url);
@@ -110,4 +133,3 @@ export async function request(endpoint: string, options: RequestInit = {}) {
         throw error;
     }
 }
-

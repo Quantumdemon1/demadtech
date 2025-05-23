@@ -50,6 +50,12 @@ export const createAdCampaignAPI = (loginUsername: string, campaignData: {
     if (!loginUsername) {
         return Promise.reject(new Error("loginUsername is required to create an ad campaign."));
     }
+    
+    // For write operations, check if loginPw cookie is set
+    if (!document.cookie.includes('loginPw=')) {
+        return Promise.reject(new Error("Authentication expired. Please log in again."));
+    }
+    
     return request(`/ad-campaign?loginUsername=${encodeURIComponent(loginUsername)}`, {
         method: 'PUT',
         body: JSON.stringify(campaignData),
@@ -88,6 +94,12 @@ export const upsertAdCreativeAPI = (loginUsername: string, creativeData: {
     if (!loginUsername) {
         return Promise.reject(new Error("loginUsername is required to create/update an ad creative."));
     }
+    
+    // For write operations, check if loginPw cookie is set
+    if (!document.cookie.includes('loginPw=')) {
+        return Promise.reject(new Error("Authentication expired. Please log in again."));
+    }
+    
     return request(`/ad-campaign/ad-creative?loginUsername=${encodeURIComponent(loginUsername)}`, {
         method: 'PUT',
         body: JSON.stringify(creativeData),
@@ -104,6 +116,12 @@ export const deleteAdCreativeAPI = (loginUsername: string, adCreativeGuid: strin
     if (!loginUsername) {
         return Promise.reject(new Error("loginUsername is required to delete an ad creative."));
     }
+    
+    // For write operations, check if loginPw cookie is set
+    if (!document.cookie.includes('loginPw=')) {
+        return Promise.reject(new Error("Authentication expired. Please log in again."));
+    }
+    
     return request(`/ad-campaign/ad-creative?loginUsername=${encodeURIComponent(loginUsername)}&adCreativeGuid=${encodeURIComponent(adCreativeGuid)}`, {
         method: 'DELETE',
     });

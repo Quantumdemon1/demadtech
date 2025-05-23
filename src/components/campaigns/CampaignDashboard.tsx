@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Campaign, CampaignMetrics as CampaignMetricsType, Initiative } from '@/types';
 import CampaignCard from './CampaignCard';
 import CampaignMetrics from './CampaignMetrics';
@@ -13,6 +12,7 @@ import { Plus } from 'lucide-react';
 import { getTestDataForRole } from '@/utils/authUtils';
 
 const CampaignDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [initiatives, setInitiatives] = useState<Initiative[]>([]);
@@ -24,7 +24,9 @@ const CampaignDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || (!user.email && !user.loginUsername)) {
+    // Authentication check
+    const loginUsername = user?.email || user?.loginUsername || '';
+    if (!loginUsername) {
       setLoading(false);
       return;
     }
@@ -32,8 +34,6 @@ const CampaignDashboard: React.FC = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const loginUsername = user.email || user.loginUsername || '';
-        
         // Fetch both campaigns and initiatives in parallel
         const [campaignsResponse, initiativesResponse] = await Promise.all([
           getDonorAdCampaignsAPI(loginUsername),
@@ -74,6 +74,7 @@ const CampaignDashboard: React.FC = () => {
         
         if (error?.status === 401) {
           toast.error("Authentication failed. Please log in again.");
+          navigate('/login');
         } else if (error?.name === 'TypeError' && error?.message.includes('Failed to fetch')) {
           toast.error("Network error. Please check your connection.");
         } else {
@@ -87,7 +88,7 @@ const CampaignDashboard: React.FC = () => {
     };
 
     fetchDashboardData();
-  }, [user]);
+  }, [user, navigate]);
 
   if (loading) {
     return (

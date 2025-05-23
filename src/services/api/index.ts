@@ -8,3 +8,6 @@ export * from './political-client';
 export * from './campaign';
 export * from './award';
 export * from './auth';
+
+// Export authentication helpers
+export { setupApiAuth, clearApiAuth, checkAuthCookies } from './base';

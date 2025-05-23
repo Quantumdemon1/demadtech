@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,6 +9,7 @@ import { getAdCreativesAPI, getInitiativeAssetsAPI } from '@/services/api';
 import { InitiativeAsset } from '@/types';
 import AdCreativeUploader from './AdCreativeUploader';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
 
 interface AdCreative {
   adCreativeGuid: string;
@@ -28,6 +28,7 @@ const AdCreativesPanel: React.FC<AdCreativesPanelProps> = ({
   campaignId,
   initiativeId 
 }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [creatives, setCreatives] = useState<AdCreative[]>([]);
   const [assets, setAssets] = useState<InitiativeAsset[]>([]);
@@ -35,22 +36,34 @@ const AdCreativesPanel: React.FC<AdCreativesPanelProps> = ({
   const [showUploader, setShowUploader] = useState(false);
 
   const fetchData = async () => {
-    if (!user?.email || !campaignId) return;
+    // Authentication check
+    const loginUsername = user?.email || user?.loginUsername || '';
+    if (!loginUsername) {
+      toast.error('Please log in to view creatives');
+      navigate('/login');
+      return;
+    }
     
     setLoading(true);
     try {
       // Fetch ad creatives for this campaign
-      const creativesData = await getAdCreativesAPI(user.email, campaignId);
+      const creativesData = await getAdCreativesAPI(loginUsername, campaignId);
       setCreatives(Array.isArray(creativesData) ? creativesData : []);
       
       // If we have an initiative ID, fetch its assets too
       if (initiativeId) {
-        const assetsData = await getInitiativeAssetsAPI(user.email, initiativeId);
+        const assetsData = await getInitiativeAssetsAPI(loginUsername, initiativeId);
         setAssets(Array.isArray(assetsData) ? assetsData : []);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching ad creatives:", error);
-      toast.error("Failed to load ad creatives");
+      
+      if (error?.status === 401) {
+        toast.error("Authentication expired. Please log in again.");
+        navigate('/login');
+      } else {
+        toast.error("Failed to load ad creatives");
+      }
     } finally {
       setLoading(false);
     }
