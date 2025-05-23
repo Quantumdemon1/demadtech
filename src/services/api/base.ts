@@ -1,3 +1,4 @@
+
 // Base API service for making HTTP requests
 import { setCookie, getCookie } from '@/utils/cookieUtils';
 import { CookieManager } from '@/utils/cookieManager';
@@ -41,6 +42,13 @@ export function clearApiAuth() {
  * - Handles error responses and parses JSON data
  */
 export async function request(endpoint: string, options: RequestInit = {}) {
+    // Ensure access token is set
+    const cookies = document.cookie;
+    if (!cookies.includes('accessToken=')) {
+        console.warn('⚠️ Access token not set. Setting now...');
+        document.cookie = `accessToken=${import.meta.env.VITE_ACCESS_TOKEN || 'test-token-12345'}; path=/; SameSite=Lax`;
+    }
+
     const url = `${API_BASE_URL}${endpoint}`;
     
     const defaultHeaders: HeadersInit = {
@@ -49,35 +57,57 @@ export async function request(endpoint: string, options: RequestInit = {}) {
 
     const config: RequestInit = {
         ...options,
-        // Include credentials (cookies) with every request
-        credentials: 'include', 
+        credentials: 'include', // CRITICAL: This sends cookies
         headers: {
             ...defaultHeaders,
             ...options.headers,
         },
     };
 
-    const response = await fetch(url, config);
+    try {
+        console.log(`🔄 API Request: ${options.method || 'GET'} ${endpoint}`);
+        const response = await fetch(url, config);
 
-    if (!response.ok) {
-        let errorData;
-        try {
-            errorData = await response.json();
-        } catch (e) {
-            // If response is not JSON or empty
-            errorData = { message: response.statusText, status: response.status };
+        if (!response.ok) {
+            let errorData;
+            try {
+                errorData = await response.json();
+            } catch (e) {
+                errorData = { message: response.statusText, status: response.status };
+            }
+            
+            // Enhanced error logging
+            if (response.status === 401) {
+                console.error('🔐 Authentication failed. Access token may be invalid or missing.');
+                console.log('Current cookies:', document.cookie);
+            } else if (response.status === 0) {
+                console.error('🚫 CORS error or backend not reachable.');
+                console.log('Attempted URL:', url);
+                console.log('Is backend running on http://localhost:8080?');
+            }
+            
+            const message = errorData?.error || errorData?.message || `API Error: ${response.status}`;
+            const error = new Error(message);
+            (error as any).status = response.status;
+            (error as any).data = errorData;
+            throw error;
         }
-        // Prefer backend error message if available
-        const message = errorData?.error || errorData?.message || `API Error: ${response.status}`;
-        const error = new Error(message);
-        // Attach status and data to the error object for more context
-        (error as any).status = response.status;
-        (error as any).data = errorData;
+
+        if (response.status === 204) {
+            return null; 
+        }
+        
+        const data = await response.json();
+        console.log(`✅ API Response:`, data);
+        return data;
+    } catch (error) {
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+            console.error('🌐 Network error: Cannot reach backend at', API_BASE_URL);
+            console.error('Please ensure:');
+            console.error('1. Backend is running on http://localhost:8080');
+            console.error('2. No firewall/proxy blocking the connection');
+        }
         throw error;
     }
-
-    if (response.status === 204) { // No Content
-        return null; 
-    }
-    return response.json();
 }
+
