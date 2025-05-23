@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect } from 'react';
 import { User, AuthContextType } from '@/types';
 import { toast } from 'sonner';
@@ -163,62 +162,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signup = async (userData: Partial<User>, password: string): Promise<User> => {
     setLoading(true);
     try {
-      // Simulate API delay
-      await simulateAPIDelay(800, 1500);
-      
-      // Create request body for donor creation
-      const donorData = mapUserToDonorRequest({
-        ...userData,
-        password // Add password to be mapped by the utility
-      });
-      
-      // For demo purposes, store in localStorage instead of calling real API
-      const newUser = {
-        id: `donor-${Date.now()}`,
-        email: userData.email,
-        loginUsername: userData.email,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        role: 'donor',
-        phone: userData.phone,
-        occupation: userData.occupation,
-        address: userData.address,
-        city: userData.city,
-        state: userData.state,
-        zip: userData.zip,
-        accountBalance: '0.00',
-        createdAt: new Date().toISOString(),
-        profileImageUrl: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=150&h=150&fit=crop&crop=face'
+      // Prepare donor data
+      const donorRequest = {
+        donorName: `${userData.firstName} ${userData.lastName}`.trim(),
+        loginUsername: userData.email || '',
+        loginPw: password
       };
       
-      // Store in registered users
-      const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-      registeredUsers.push(newUser);
-      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      // Call real API
+      const response = await createDonorAPI(donorRequest);
       
-      // Store in current user
+      // Map response to User object
+      const newUser = mapDonorToUser(response);
+      
+      // Set password cookie for future authenticated requests
+      document.cookie = `loginPw=${password}; path=/; SameSite=Lax`;
+      
+      // Store user
       localStorage.setItem('user', JSON.stringify(newUser));
-      setUser(newUser as User);
+      setUser(newUser);
       
       toast.success('Account created successfully');
-      return newUser as User;
+      return newUser;
     } catch (error) {
       console.error('Signup error:', error);
       
-      // Handle specific error codes from backend
-      if ((error as any).code === 'USERNAME_TAKEN') {
-        toast.error('This email is already registered. Please use a different email.');
-      } else if ((error as any).code === 'MISSING_REQUIRED_FIELDS') {
-        const missingFields = (error as any).details?.missing_fields || [];
-        toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`);
-      } else if ((error as any).code === 'INVALID_EMAIL_FORMAT') {
-        toast.error('Please enter a valid email address.');
-      } else if ((error as any).code === 'WEAK_PASSWORD') {
-        toast.error('Password does not meet security requirements. Please use a stronger password.');
+      // Handle specific backend errors
+      if ((error as any)?.status === 409) {
+        toast.error('This email is already registered');
       } else {
         toast.error(error instanceof Error ? error.message : 'Failed to create account');
       }
-      
       throw error;
     } finally {
       setLoading(false);
@@ -279,10 +253,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Logout handler
   const logout = () => {
-    // Remove user from localStorage
+    // Clear cookies
+    document.cookie = 'loginPw=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    // Keep access token cookie (it's service-level, not user-level)
+    
+    // Clear localStorage and state
     localStorage.removeItem('user');
-    // Clear authentication cookies
-    CookieManager.clearAuthCookies();
     setUser(null);
     toast.success('Logged out successfully');
   };
