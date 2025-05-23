@@ -40,14 +40,22 @@ const queryClient = new QueryClient({
 
 const App = () => {
   useEffect(() => {
-    // Initialize test account system when app loads
+    // Initialize test account system
     initializeTestAccountSystem();
+    
+    // Set access token cookie for API communication
+    const accessToken = import.meta.env.VITE_ACCESS_TOKEN || 'test-token-12345';
+    document.cookie = `accessToken=${accessToken}; path=/; SameSite=Lax`;
+    console.log('🍪 Access token cookie initialized');
     
     // Show test account info in development
     if (import.meta.env.DEV) {
-      // Small delay to ensure everything is loaded
       setTimeout(() => {
         showTestAccountInfo();
+        console.log('💡 For backend integration testing:');
+        console.log('1. Ensure backend is running on http://localhost:8080');
+        console.log('2. Access token is set as cookie:', document.cookie.includes('accessToken='));
+        console.log('3. You can create real accounts or use test accounts');
       }, 1000);
     }
   }, []);
