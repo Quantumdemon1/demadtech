@@ -1,6 +1,6 @@
-
 // Base API service for making HTTP requests
 import { setCookie, getCookie } from '@/utils/cookieUtils';
+import { CookieManager } from '@/utils/cookieManager';
 
 /**
  * Base URL for API requests loaded from environment variable
@@ -17,19 +17,12 @@ export const ACCESS_TOKEN = import.meta.env.VITE_ACCESS_TOKEN || 'test-token-123
  * @param password - User password to set in loginPw cookie
  */
 export function setupApiAuth(password: string) {
-    // Set accessToken cookie (persistent for 30 days)
-    setCookie('accessToken', ACCESS_TOKEN, {
-        expires: 30 * 24 * 60 * 60, // 30 days in seconds
-        secure: window.location.protocol === 'https:',
-        sameSite: 'lax'
-    });
+    // Set access token cookie
+    CookieManager.setAccessToken();
     
-    // Set loginPw cookie with user's password (session only)
+    // Set loginPw cookie with user's password
     if (password) {
-        setCookie('loginPw', password, {
-            secure: window.location.protocol === 'https:',
-            sameSite: 'lax'
-        });
+        CookieManager.setLoginPassword(password);
     }
 }
 
@@ -37,8 +30,7 @@ export function setupApiAuth(password: string) {
  * Clears authentication cookies
  */
 export function clearApiAuth() {
-    document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;';
-    document.cookie = 'loginPw=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;';
+    CookieManager.clearAuthCookies();
 }
 
 /**

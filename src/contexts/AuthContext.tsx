@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useEffect } from 'react';
 import { User, AuthContextType } from '@/types';
 import { toast } from 'sonner';
@@ -19,6 +18,7 @@ import {
 } from '@/services/dataMapping';
 import { removeCookie } from '@/utils/cookieUtils';
 import { API_BASE_URL, setupApiAuth, clearApiAuth } from '@/services/api/base';
+import { CookieManager } from '@/utils/cookieManager';
 import { 
   testUsers, 
   testCredentials, 
@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(testUser);
           
           // Set up authentication cookies for test accounts
-          setupApiAuth(password);
+          CookieManager.setLoginPassword(password);
           
           // Show success toast with appropriate message
           toast.success(`Logged in as ${testUser.firstName || testUser.politicalClientName || 'Admin'} (Test Account)`);
@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const endpoint = role ? `/login/${role}` : '/login/donor';
       
       // Set up authentication cookies before making the login request
-      setupApiAuth(password);
+      CookieManager.setLoginPassword(password);
       
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
@@ -110,7 +110,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (!response.ok) {
         // Clear cookies if login fails
-        clearApiAuth();
+        CookieManager.clearAuthCookies();
         const errorData = await response.json();
         throw new Error(errorData.error || 'Login failed');
       }
@@ -273,7 +273,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Remove user from localStorage
     localStorage.removeItem('user');
     // Clear authentication cookies
-    clearApiAuth();
+    CookieManager.clearAuthCookies();
     setUser(null);
     toast.success('Logged out successfully');
   };
