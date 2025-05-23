@@ -2,14 +2,12 @@
 import React from 'react';
 import LoginForm from '@/components/auth/LoginForm';
 import Header from '@/components/layout/Header';
-import { getTestCredentials } from '@/utils/authUtils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
 
 const Login: React.FC = () => {
   const [showTestAccounts, setShowTestAccounts] = useState(true);
-  const testCreds = getTestCredentials();
 
   return (
     <div className="flex min-h-screen flex-col">
