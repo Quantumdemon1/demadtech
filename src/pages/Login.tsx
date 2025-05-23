@@ -27,7 +27,7 @@ const Login: React.FC = () => {
                 onClick={() => setShowTestAccounts(!showTestAccounts)}
                 className="mt-2 text-amber-600 hover:text-amber-800 underline"
               >
-                {showTestAccounts ? 'Hide' : 'Show'} Test Credentials
+                {showTestAccounts ? 'Hide' : 'Show'} Test Information
               </button>
             </div>
             
@@ -42,8 +42,6 @@ const Login: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm">
-                      <div><strong>Email:</strong> {testCreds.donor.username}</div>
-                      <div><strong>Password:</strong> {testCreds.donor.password}</div>
                       <div className="pt-2 text-gray-600">
                         <strong>Features:</strong>
                         <ul className="list-disc list-inside mt-1">
@@ -66,8 +64,6 @@ const Login: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm">
-                      <div><strong>Username:</strong> {testCreds.politicalClient.username}</div>
-                      <div><strong>Password:</strong> {testCreds.politicalClient.password}</div>
                       <div className="pt-2 text-gray-600">
                         <strong>Features:</strong>
                         <ul className="list-disc list-inside mt-1">
@@ -90,8 +86,6 @@ const Login: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm">
-                      <div><strong>Email:</strong> {testCreds.admin.username}</div>
-                      <div><strong>Password:</strong> {testCreds.admin.password}</div>
                       <div className="pt-2 text-gray-600">
                         <strong>Features:</strong>
                         <ul className="list-disc list-inside mt-1">
