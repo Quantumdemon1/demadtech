@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useEffect } from 'react';
 import { User, AuthContextType } from '@/types';
 import { toast } from 'sonner';
@@ -93,43 +94,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // Real API login for non-test accounts
-      const endpoint = role ? `/login/${role}` : '/login/donor';
-      
-      // Set up authentication cookies before making the login request
-      CookieManager.setLoginPassword(password);
-      
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // Important: includes cookies
-        body: JSON.stringify({
-          loginUsername: emailOrUsername,
-          loginPw: password
-        })
-      });
-      
-      if (!response.ok) {
-        // Clear cookies if login fails
-        CookieManager.clearAuthCookies();
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Login failed');
+      try {
+        // Set password cookie before API call
+        document.cookie = `loginPw=${password}; path=/; SameSite=Lax`;
+        
+        // Determine which endpoint based on role
+        let endpoint = '/donor';
+        let mapFunction = mapDonorToUser;
+        
+        if (role === 'politicalClient') {
+          endpoint = '/political-client';
+          mapFunction = mapPoliticalClientToUser;
+        } else if (role === 'admin') {
+          endpoint = '/admin/auth';
+          mapFunction = mapAdminToUser;
+        }
+        
+        // Call API with loginUsername as query parameter
+        const response = await fetch(
+          `${API_BASE_URL}${endpoint}?loginUsername=${encodeURIComponent(emailOrUsername)}`,
+          {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          }
+        );
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Login failed');
+        }
+        
+        const userData = await response.json();
+        const mappedUser = mapFunction(userData);
+        
+        // Store user and show success
+        localStorage.setItem('user', JSON.stringify(mappedUser));
+        setUser(mappedUser);
+        toast.success('Logged in successfully');
+        
+        return mappedUser;
+      } catch (error) {
+        console.error('Login error:', error);
+        toast.error(error instanceof Error ? error.message : 'Invalid credentials');
+        throw error;
       }
-      
-      const { user, role: userRole } = await response.json();
-      
-      // Map backend user data to frontend format
-      const userData = userRole === 'politicalClient' 
-        ? mapPoliticalClientToUser(user)
-        : userRole === 'admin'
-          ? mapAdminToUser(user)
-          : mapDonorToUser(user);
-      
-      // Store user in localStorage and state
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      toast.success('Logged in successfully');
-      
-      return userData;
     } catch (error) {
       console.error('Login error:', error);
       
