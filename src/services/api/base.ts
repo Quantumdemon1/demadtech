@@ -1,10 +1,45 @@
 
 // Base API service for making HTTP requests
+import { setCookie, getCookie } from '@/utils/cookieUtils';
 
 /**
  * Base URL for API requests loaded from environment variable
  */
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/v1';
+
+/**
+ * Access token for API authentication
+ */
+export const ACCESS_TOKEN = import.meta.env.VITE_ACCESS_TOKEN || 'test-token-12345';
+
+/**
+ * Sets up required cookies for API authentication
+ * @param password - User password to set in loginPw cookie
+ */
+export function setupApiAuth(password: string) {
+    // Set accessToken cookie (persistent for 30 days)
+    setCookie('accessToken', ACCESS_TOKEN, {
+        expires: 30 * 24 * 60 * 60, // 30 days in seconds
+        secure: window.location.protocol === 'https:',
+        sameSite: 'lax'
+    });
+    
+    // Set loginPw cookie with user's password (session only)
+    if (password) {
+        setCookie('loginPw', password, {
+            secure: window.location.protocol === 'https:',
+            sameSite: 'lax'
+        });
+    }
+}
+
+/**
+ * Clears authentication cookies
+ */
+export function clearApiAuth() {
+    document.cookie = 'accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;';
+    document.cookie = 'loginPw=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;';
+}
 
 /**
  * Base request function for making API calls to the backend

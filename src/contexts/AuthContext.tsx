@@ -18,7 +18,7 @@ import {
   mapAdminToUser
 } from '@/services/dataMapping';
 import { removeCookie } from '@/utils/cookieUtils';
-import { API_BASE_URL } from '@/services/api/base';
+import { API_BASE_URL, setupApiAuth, clearApiAuth } from '@/services/api/base';
 import { 
   testUsers, 
   testCredentials, 
@@ -82,6 +82,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           localStorage.setItem('user', JSON.stringify(testUser));
           setUser(testUser);
           
+          // Set up authentication cookies for test accounts
+          setupApiAuth(password);
+          
           // Show success toast with appropriate message
           toast.success(`Logged in as ${testUser.firstName || testUser.politicalClientName || 'Admin'} (Test Account)`);
           
@@ -91,6 +94,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Real API login for non-test accounts
       const endpoint = role ? `/login/${role}` : '/login/donor';
+      
+      // Set up authentication cookies before making the login request
+      setupApiAuth(password);
       
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
@@ -103,6 +109,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (!response.ok) {
+        // Clear cookies if login fails
+        clearApiAuth();
         const errorData = await response.json();
         throw new Error(errorData.error || 'Login failed');
       }
@@ -264,8 +272,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     // Remove user from localStorage
     localStorage.removeItem('user');
-    // Remove loginPw cookie
-    removeCookie('loginPw');
+    // Clear authentication cookies
+    clearApiAuth();
     setUser(null);
     toast.success('Logged out successfully');
   };
