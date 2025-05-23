@@ -11,27 +11,28 @@ import { User, Campaign, Contest, Initiative } from "@/types";
  * Maps backend donor response to frontend User object
  */
 export function mapDonorToUser(donorData: any): User {
+  // Handle both test data format and real backend format
+  const id = donorData.donorGuid || donorData.id;
+  const loginUsername = donorData.loginUsername || donorData.email;
+  
   return {
-    id: donorData.donorGuid,
+    id: id,
     role: 'donor',
-    // If donorName is provided, we could try to split it into firstName/lastName
-    // but this can be unreliable, so we just store it as a combined name field
-    firstName: donorData.donorName?.split(' ')[0] || '',
-    lastName: donorData.donorName?.split(' ').slice(1).join(' ') || '',
-    loginUsername: donorData.loginUsername,
-    email: donorData.loginUsername, // Backend uses loginUsername as the email identifier
-    accountBalance: donorData.accountBalance,
-    profileImageUrl: donorData.profileImageUrl,
+    firstName: donorData.firstName || donorData.donorName?.split(' ')[0] || '',
+    lastName: donorData.lastName || donorData.donorName?.split(' ').slice(1).join(' ') || '',
+    loginUsername: loginUsername,
+    email: loginUsername, // Backend uses loginUsername as email
+    accountBalance: donorData.accountBalance || '0.00',
+    profileImageUrl: donorData.profileImageUrl || donorData.profileImagePresignedUrl,
     profileImagePresignedUrl: donorData.profileImagePresignedUrl,
-    // Note: These fields below are not currently provided by the backend
-    // but are defined in the frontend User interface
-    phone: '',
-    occupation: '',
-    address: '',
-    city: '',
-    state: '',
-    zip: '',
-    createdAt: new Date().toISOString(), // Use current date as fallback
+    // Frontend-only fields (not in backend)
+    phone: donorData.phone || '',
+    occupation: donorData.occupation || '',
+    address: donorData.address || '',
+    city: donorData.city || '',
+    state: donorData.state || '',
+    zip: donorData.zip || '',
+    createdAt: donorData.createdAt || new Date().toISOString(),
   };
 }
 
