@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 import { initializeTestAccountSystem, showTestAccountInfo } from "@/utils/authUtils";
+import { testBackendConnection } from "@/utils/backendTest";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
@@ -56,6 +57,9 @@ const App = () => {
         console.log('1. Ensure backend is running on http://localhost:8080');
         console.log('2. Access token is set as cookie:', document.cookie.includes('accessToken='));
         console.log('3. You can create real accounts or use test accounts');
+        
+        // Run backend connection test
+        testBackendConnection();
       }, 1000);
     }
   }, []);
