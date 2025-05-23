@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Campaign, CampaignMetrics as CampaignMetricsType, Initiative } from '@/types';
@@ -5,7 +6,7 @@ import CampaignCard from './CampaignCard';
 import CampaignMetrics from './CampaignMetrics';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import useAuth from '@/hooks/useAuth';
+import useAuthCheck from '@/hooks/useAuthCheck';
 import { getDonorAdCampaignsAPI, getAllInitiativesAPI } from '@/services/api';
 import { mapBackendAdCampaignToCampaign, mapBackendInitiativeToInitiative } from '@/services/dataMapping';
 import { Plus } from 'lucide-react';
@@ -13,7 +14,7 @@ import { getTestDataForRole } from '@/utils/authUtils';
 
 const CampaignDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loginUsername, isAuthenticated, checkAuthStatus } = useAuthCheck();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [initiatives, setInitiatives] = useState<Initiative[]>([]);
   const [totalMetrics, setTotalMetrics] = useState<CampaignMetricsType>({
@@ -25,8 +26,7 @@ const CampaignDashboard: React.FC = () => {
 
   useEffect(() => {
     // Authentication check
-    const loginUsername = user?.email || user?.loginUsername || '';
-    if (!loginUsername) {
+    if (!isAuthenticated) {
       setLoading(false);
       return;
     }
@@ -88,7 +88,7 @@ const CampaignDashboard: React.FC = () => {
     };
 
     fetchDashboardData();
-  }, [user, navigate]);
+  }, [user, loginUsername, navigate, isAuthenticated]);
 
   if (loading) {
     return (

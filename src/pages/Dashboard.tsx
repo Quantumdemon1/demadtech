@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import CampaignDashboard from '@/components/campaigns/CampaignDashboard';
-import useAuth from '@/hooks/useAuth';
+import useAuthCheck from '@/hooks/useAuthCheck';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import InitiativesTab from '@/components/initiatives/InitiativesTab';
 import { Initiative } from '@/types';
@@ -14,7 +15,7 @@ import InitiativeSection from '@/components/initiatives/InitiativeSection';
 import { getTestDataForRole } from '@/utils/authUtils';
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loginUsername, isAuthenticated } = useAuthCheck();
   const [activeTab, setActiveTab] = useState<string>('campaigns');
   const navigate = useNavigate();
   const [loadingInitiatives, setLoadingInitiatives] = useState<boolean>(false);
@@ -34,7 +35,7 @@ const Dashboard: React.FC = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!isAuthenticated) return;
 
     const loadTestData = async () => {
       setLoadingInitiatives(true);
@@ -65,9 +66,9 @@ const Dashboard: React.FC = () => {
     };
 
     loadTestData();
-  }, [user]);
+  }, [user, isAuthenticated]);
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
 

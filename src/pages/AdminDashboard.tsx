@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { Navigate, Link } from 'react-router-dom';
-import useAuth from '@/hooks/useAuth';
+import useAuthCheck from '@/hooks/useAuthCheck';
 import Header from '@/components/layout/Header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { CheckCircle, Award, Users, UserCheck } from 'lucide-react';
 import { getTestDataForRole } from '@/utils/authUtils';
 
 const AdminDashboard: React.FC = () => {
-  const { user, loading } = useAuth();
+  const { user, loginUsername, isAuthenticated, loading } = useAuthCheck(true);
   const [stats, setStats] = useState({
     pendingApprovals: 0,
     totalAwards: 12,
@@ -39,7 +40,7 @@ const AdminDashboard: React.FC = () => {
   }
 
   // Protect the route: only admins should access this page
-  if (!user || user.role !== 'admin') {
+  if (!isAuthenticated || user?.role !== 'admin') {
     return <Navigate to="/login" />;
   }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import useAuth from '@/hooks/useAuth';
+import useAuthCheck from '@/hooks/useAuthCheck';
 import Header from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,8 @@ import { Initiative } from '@/types';
 import { mapBackendInitiativeToInitiative, mapCampaignToAdCampaignRequest } from '@/services/dataMapping';
 
 const CreateCampaign: React.FC = () => {
-  const { user } = useAuth();
+  // Use our enhanced hook for auth checks - true for requiresAuth, true for writeOperation
+  const { user, loginUsername, isAuthenticated, hasLoginCookie, checkAuthStatus } = useAuthCheck(true, true);
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingInitiatives, setIsLoadingInitiatives] = useState(false);
@@ -36,18 +37,17 @@ const CreateCampaign: React.FC = () => {
   const [seedAnswers, setSeedAnswers] = useState<Record<string, string>>({});
   
   // Redirect to login if not authenticated
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
   
   // Fetch initiatives on component mount
   useEffect(() => {
     const fetchInitiatives = async () => {
-      if (!user?.email && !user?.loginUsername) return;
+      if (!loginUsername) return;
       
       setIsLoadingInitiatives(true);
       try {
-        const loginUsername = user.email || user.loginUsername || '';
         const response = await getAllInitiativesAPI(loginUsername);
         const mappedInitiatives = Array.isArray(response) 
           ? response.map(i => mapBackendInitiativeToInitiative(i))
@@ -63,7 +63,7 @@ const CreateCampaign: React.FC = () => {
     };
     
     fetchInitiatives();
-  }, [user]);
+  }, [loginUsername]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -164,6 +164,11 @@ const CreateCampaign: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // First check authentication status
+    if (!checkAuthStatus()) {
+      return; // Auth check will handle redirects and error messages
+    }
+    
     // Validate form before submission
     const validationErrors = validateCampaignForm();
     if (validationErrors.length > 0) {
@@ -173,10 +178,6 @@ const CreateCampaign: React.FC = () => {
     
     try {
       setIsSubmitting(true);
-      
-      if (!user?.email && !user?.loginUsername) {
-        throw new Error("User not authenticated");
-      }
       
       // Prepare seed answers in the format expected by the API
       const formattedSeedAnswers = selectedInitiative?.seedQuestions 
@@ -199,9 +200,6 @@ const CreateCampaign: React.FC = () => {
         },
         formattedSeedAnswers
       );
-      
-      // Use email or loginUsername for API call
-      const loginUsername = user.email || user.loginUsername || '';
       
       // Send request to API
       const response = await createAdCampaignAPI(loginUsername, campaignRequest);
