@@ -9,7 +9,8 @@ import { CheckCircle, Award, Users, UserCheck } from 'lucide-react';
 import { getTestDataForRole } from '@/utils/authUtils';
 
 const AdminDashboard: React.FC = () => {
-  const { user, loginUsername, isAuthenticated, loading } = useAuthCheck(true);
+  const { user, loginUsername, isAuthenticated } = useAuthCheck(true);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     pendingApprovals: 0,
     totalAwards: 12,
@@ -27,6 +28,9 @@ const AdminDashboard: React.FC = () => {
           pendingApprovals: testData.pendingCampaigns.length || 0
         }));
       }
+      setLoading(false);
+    } else {
+      setLoading(false);
     }
   }, [user]);
 

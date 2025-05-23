@@ -1,6 +1,30 @@
 
 // Campaign API endpoints
-import { request } from './base';
+import { request } from './core';
+import { validateUsername } from './utils';
+
+/**
+ * Campaign data types
+ */
+interface CampaignData {
+  name: string;
+  initiativeGuid: string;
+  description: string;
+  seedAnswers: { question: string; answer: string }[];
+  contentType?: 'funny' | 'personal' | 'formal';
+  startDate?: string;
+  endDate?: string;
+  adSpend?: number;
+}
+
+interface AdCreativeData {
+  adCampaignGuid: string;
+  adCreativeGuid?: string; // Include for updates, omit for creation
+  name: string;
+  caption: string;
+  adCreativePayload: string; // Base64 image string
+  sourceAssetGuid?: string; // Optional initiative asset GUID
+}
 
 /**
  * Get ad campaigns for a donor
@@ -8,12 +32,10 @@ import { request } from './base';
  * @returns Promise with all ad campaigns for the donor
  */
 export const getDonorAdCampaignsAPI = (loginUsername: string) => {
-    if (!loginUsername) {
-        return Promise.reject(new Error("loginUsername is required to fetch ad campaigns."));
-    }
-    return request(`/ad-campaigns?loginUsername=${encodeURIComponent(loginUsername)}`, {
-        method: 'GET',
-    });
+  validateUsername(loginUsername);
+  return request(`/ad-campaigns?loginUsername=${encodeURIComponent(loginUsername)}`, {
+    method: 'GET',
+  });
 };
 
 /**
@@ -23,12 +45,10 @@ export const getDonorAdCampaignsAPI = (loginUsername: string) => {
  * @returns Promise with detailed ad campaign data
  */
 export const getAdCampaignByIdAPI = (loginUsername: string, adCampaignGuid: string) => {
-    if (!loginUsername) {
-        return Promise.reject(new Error("loginUsername is required to fetch an ad campaign."));
-    }
-    return request(`/ad-campaign/${encodeURIComponent(adCampaignGuid)}?loginUsername=${encodeURIComponent(loginUsername)}`, {
-        method: 'GET',
-    });
+  validateUsername(loginUsername);
+  return request(`/ad-campaign/${encodeURIComponent(adCampaignGuid)}?loginUsername=${encodeURIComponent(loginUsername)}`, {
+    method: 'GET',
+  });
 };
 
 /**
@@ -37,29 +57,18 @@ export const getAdCampaignByIdAPI = (loginUsername: string, adCampaignGuid: stri
  * @param campaignData - Object containing campaign details
  * @returns Promise with the created ad campaign data
  */
-export const createAdCampaignAPI = (loginUsername: string, campaignData: {
-    name: string;
-    initiativeGuid: string;
-    description: string;
-    seedAnswers: { question: string; answer: string }[];
-    contentType?: 'funny' | 'personal' | 'formal';
-    startDate?: string;
-    endDate?: string;
-    adSpend?: number;
-}) => {
-    if (!loginUsername) {
-        return Promise.reject(new Error("loginUsername is required to create an ad campaign."));
-    }
-    
-    // For write operations, check if loginPw cookie is set
-    if (!document.cookie.includes('loginPw=')) {
-        return Promise.reject(new Error("Authentication expired. Please log in again."));
-    }
-    
-    return request(`/ad-campaign?loginUsername=${encodeURIComponent(loginUsername)}`, {
-        method: 'PUT',
-        body: JSON.stringify(campaignData),
-    });
+export const createAdCampaignAPI = (loginUsername: string, campaignData: CampaignData) => {
+  validateUsername(loginUsername);
+  
+  // For write operations, check if loginPw cookie is set
+  if (!document.cookie.includes('loginPw=')) {
+    return Promise.reject(new Error("Authentication expired. Please log in again."));
+  }
+  
+  return request(`/ad-campaign?loginUsername=${encodeURIComponent(loginUsername)}`, {
+    method: 'PUT',
+    body: JSON.stringify(campaignData),
+  });
 };
 
 /**
@@ -69,12 +78,10 @@ export const createAdCampaignAPI = (loginUsername: string, campaignData: {
  * @returns Promise with ad creatives for the campaign
  */
 export const getAdCreativesAPI = (loginUsername: string, adCampaignGuid: string) => {
-    if (!loginUsername) {
-        return Promise.reject(new Error("loginUsername is required to fetch ad creatives."));
-    }
-    return request(`/ad-campaign/ad-creatives?loginUsername=${encodeURIComponent(loginUsername)}&adCampaignGuid=${encodeURIComponent(adCampaignGuid)}`, {
-        method: 'GET',
-    });
+  validateUsername(loginUsername);
+  return request(`/ad-campaign/ad-creatives?loginUsername=${encodeURIComponent(loginUsername)}&adCampaignGuid=${encodeURIComponent(adCampaignGuid)}`, {
+    method: 'GET',
+  });
 };
 
 /**
@@ -83,27 +90,18 @@ export const getAdCreativesAPI = (loginUsername: string, adCampaignGuid: string)
  * @param creativeData - Object containing ad creative details
  * @returns Promise with the created/updated ad creative data
  */
-export const upsertAdCreativeAPI = (loginUsername: string, creativeData: {
-    adCampaignGuid: string;
-    adCreativeGuid?: string; // Include for updates, omit for creation
-    name: string;
-    caption: string;
-    adCreativePayload: string; // Base64 image string
-    sourceAssetGuid?: string; // Optional initiative asset GUID
-}) => {
-    if (!loginUsername) {
-        return Promise.reject(new Error("loginUsername is required to create/update an ad creative."));
-    }
-    
-    // For write operations, check if loginPw cookie is set
-    if (!document.cookie.includes('loginPw=')) {
-        return Promise.reject(new Error("Authentication expired. Please log in again."));
-    }
-    
-    return request(`/ad-campaign/ad-creative?loginUsername=${encodeURIComponent(loginUsername)}`, {
-        method: 'PUT',
-        body: JSON.stringify(creativeData),
-    });
+export const upsertAdCreativeAPI = (loginUsername: string, creativeData: AdCreativeData) => {
+  validateUsername(loginUsername);
+  
+  // For write operations, check if loginPw cookie is set
+  if (!document.cookie.includes('loginPw=')) {
+    return Promise.reject(new Error("Authentication expired. Please log in again."));
+  }
+  
+  return request(`/ad-campaign/ad-creative?loginUsername=${encodeURIComponent(loginUsername)}`, {
+    method: 'PUT',
+    body: JSON.stringify(creativeData),
+  });
 };
 
 /**
@@ -113,16 +111,14 @@ export const upsertAdCreativeAPI = (loginUsername: string, creativeData: {
  * @returns Promise with the deletion result
  */
 export const deleteAdCreativeAPI = (loginUsername: string, adCreativeGuid: string) => {
-    if (!loginUsername) {
-        return Promise.reject(new Error("loginUsername is required to delete an ad creative."));
-    }
-    
-    // For write operations, check if loginPw cookie is set
-    if (!document.cookie.includes('loginPw=')) {
-        return Promise.reject(new Error("Authentication expired. Please log in again."));
-    }
-    
-    return request(`/ad-campaign/ad-creative?loginUsername=${encodeURIComponent(loginUsername)}&adCreativeGuid=${encodeURIComponent(adCreativeGuid)}`, {
-        method: 'DELETE',
-    });
+  validateUsername(loginUsername);
+  
+  // For write operations, check if loginPw cookie is set
+  if (!document.cookie.includes('loginPw=')) {
+    return Promise.reject(new Error("Authentication expired. Please log in again."));
+  }
+  
+  return request(`/ad-campaign/ad-creative?loginUsername=${encodeURIComponent(loginUsername)}&adCreativeGuid=${encodeURIComponent(adCreativeGuid)}`, {
+    method: 'DELETE',
+  });
 };
