@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { FileInput } from '@/components/ui/file-input';
@@ -24,11 +25,17 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [caption, setCaption] = useState('');
-  const [file, setFile] = useState<File | null>(null);
+  const [fileData, setFileData] = useState<{file: File | null, base64Data: string | null}>({
+    file: null,
+    base64Data: null
+  });
   const [isUploading, setIsUploading] = useState(false);
 
-  const handleFileChange = (newFile: File | null) => {
-    setFile(newFile);
+  const handleFileChange = (file: File | null, base64Data?: string) => {
+    setFileData({
+      file,
+      base64Data: base64Data || null
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,7 +56,7 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
       return;
     }
     
-    if (!file) {
+    if (!fileData.file || !fileData.base64Data) {
       toast.error("Please select an image to upload");
       return;
     }
@@ -62,37 +69,21 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
     setIsUploading(true);
     
     try {
-      // Convert file to base64
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = async () => {
-        const base64String = reader.result as string;
-        // Remove the data:image/jpeg;base64, part
-        const base64Content = base64String.split(',')[1];
-        
-        await upsertAdCreativeAPI(loginUsername, {
-          adCampaignGuid: campaignId,
-          name,
-          caption,
-          adCreativePayload: base64Content,
-        });
-        
-        toast.success("Creative uploaded successfully!");
-        setName('');
-        setCaption('');
-        setFile(null);
-        
-        if (onSuccess) {
-          onSuccess();
-        }
-        
-        setIsUploading(false);
-      };
+      await upsertAdCreativeAPI(loginUsername, {
+        adCampaignGuid: campaignId,
+        name,
+        caption,
+        adCreativePayload: fileData.base64Data,
+      });
       
-      reader.onerror = () => {
-        toast.error("Error reading file");
-        setIsUploading(false);
-      };
+      toast.success("Creative uploaded successfully!");
+      setName('');
+      setCaption('');
+      setFileData({ file: null, base64Data: null });
+      
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error: any) {
       console.error("Error uploading creative:", error);
       
@@ -102,6 +93,7 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
       } else {
         toast.error("Failed to upload creative. Please try again.");
       }
+    } finally {
       setIsUploading(false);
     }
   };
@@ -117,12 +109,13 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
             <FileInput
               accept="image/*"
               onFileChange={handleFileChange}
-              value={file}
+              value={fileData.file}
               buttonText="Select Image"
-              selectedFileName={file?.name}
-              showPreview={!!file}
-              onRemove={() => setFile(null)}
+              selectedFileName={fileData.file?.name}
+              showPreview={!!fileData.file}
+              onRemove={() => setFileData({file: null, base64Data: null})}
               previewClassName="h-40 w-full"
+              maxSizeMB={5}
             />
           </div>
           <div>
@@ -143,7 +136,7 @@ const AdCreativeUploader: React.FC<AdCreativeUploaderProps> = ({
         <CardFooter>
           <Button 
             type="submit" 
-            disabled={isUploading || !file || !name.trim()} 
+            disabled={isUploading || !fileData.file || !name.trim()} 
             className="w-full"
           >
             {isUploading ? "Uploading..." : "Upload Creative"}

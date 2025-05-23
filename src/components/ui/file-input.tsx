@@ -1,12 +1,13 @@
 
 import * as React from "react";
-import { Image, UploadIcon, X } from "lucide-react";
+import { Image, UploadIcon, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useFileUpload } from "@/hooks/useFileUpload";
 
 interface FileInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> {
-  onFileChange?: (file: File | null) => void;
+  onFileChange?: (file: File | null, base64Data?: string) => void;
   value?: File | null;
   buttonText?: string;
   buttonClassName?: string;
@@ -16,6 +17,7 @@ interface FileInputProps
   showPreview?: boolean;
   onRemove?: () => void;
   previewClassName?: string;
+  maxSizeMB?: number;
 }
 
 /**
@@ -32,10 +34,11 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
       selectedFileName,
       value,
       accept,
-      previewUrl,
+      previewUrl: externalPreviewUrl,
       showPreview = false,
       onRemove,
       previewClassName,
+      maxSizeMB = 5,
       ...props
     },
     ref
@@ -43,34 +46,42 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
     // Generate a unique ID if none is provided
     const inputId = id || React.useId();
     
-    // Create internal preview URL for selected file
-    const [localPreviewUrl, setLocalPreviewUrl] = React.useState<string | null>(null);
+    // Convert accept string to array for validation
+    const acceptedTypes = accept?.split(',').map(type => type.trim()) || [];
     
-    // Update local preview when a new file is selected
-    React.useEffect(() => {
-      if (value && value instanceof File) {
-        const url = URL.createObjectURL(value);
-        setLocalPreviewUrl(url);
-        return () => {
-          URL.revokeObjectURL(url);
-        };
+    // Use our custom hook for file handling
+    const {
+      previewUrl: hookPreviewUrl,
+      file: hookFile,
+      isLoading,
+      handleFileChange: internalHandleFileChange,
+      resetFile
+    } = useFileUpload({
+      maxSizeMB,
+      acceptedFileTypes: acceptedTypes.length > 0 ? acceptedTypes : undefined,
+      onSuccess: (base64Data, file) => {
+        if (onFileChange) onFileChange(file, base64Data);
       }
-    }, [value]);
+    });
     
+    // Use controlled value if provided, otherwise use hook's internal state
+    const displayFile = value || hookFile;
+    
+    // Use external preview URL if provided, otherwise use hook's internal preview
+    const displayPreviewUrl = externalPreviewUrl || hookPreviewUrl;
+    
+    // Handle file change
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0] || null;
-      if (onFileChange) onFileChange(file);
+      internalHandleFileChange(e);
     };
 
+    // Handle file removal
     const handleRemove = (e: React.MouseEvent) => {
       e.stopPropagation();
+      resetFile();
       if (onFileChange) onFileChange(null);
       if (onRemove) onRemove();
-      setLocalPreviewUrl(null);
     };
-    
-    // Determine which preview URL to use (external or local)
-    const displayPreviewUrl = previewUrl || localPreviewUrl;
     
     return (
       <div className={cn("flex flex-col gap-2", className)}>
@@ -92,7 +103,7 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
                 alt="Preview"
                 className="w-full h-full object-cover"
               />
-              {onRemove && (
+              {(onRemove || onFileChange) && (
                 <Button 
                   type="button"
                   size="icon"
@@ -111,26 +122,30 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
             variant="outline"
             onClick={() => document.getElementById(inputId)?.click()}
             className={cn("flex items-center gap-2", buttonClassName)}
+            disabled={isLoading}
           >
-            {displayPreviewUrl ? (
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : displayPreviewUrl ? (
               <Image className="h-4 w-4 mr-2" />
             ) : (
               <UploadIcon className="h-4 w-4 mr-2" />
             )}
-            {buttonText}
+            {isLoading ? "Uploading..." : buttonText}
           </Button>
         )}
         
-        {selectedFileName && !showPreview && (
+        {(selectedFileName || displayFile?.name) && !showPreview && (
           <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-            <span className="truncate">Selected: {selectedFileName}</span>
-            {onRemove && (
+            <span className="truncate">Selected: {selectedFileName || displayFile?.name}</span>
+            {(onRemove || onFileChange) && (
               <Button 
                 type="button" 
                 variant="ghost" 
                 size="sm" 
                 className="h-6 px-2 text-destructive" 
                 onClick={handleRemove}
+                disabled={isLoading}
               >
                 Remove
               </Button>
