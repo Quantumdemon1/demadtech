@@ -1,3 +1,4 @@
+
 // API Client Service for communicating with the backend
 // Backend URL is loaded from environment variable VITE_API_BASE_URL
 import { mockAPI } from './mockAPI';
@@ -5,7 +6,7 @@ import { mockAPI } from './mockAPI';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/v1';
 
 // Flag to control whether to use mock API or real API
-const USE_MOCK_API = true; // Set to false when real backend is ready
+const USE_MOCK_API = false; // Set to false when real backend is ready
 
 /**
  * Base request function for making API calls to the backend
